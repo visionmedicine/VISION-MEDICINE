@@ -1,6 +1,8 @@
+/** @jsxImportSource @emotion/react */
 import React, { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router-dom";
-import { useMediaQuery, Spinner, Center, Box } from "@chakra-ui/react";
+import { useMediaQuery, Center, Box, Flex } from "@chakra-ui/react";
+import { keyframes, css } from "@emotion/react";
 
 // Layouts
 const DesktopLayout = lazy(() => import("@/components/layouts/DesktopLayout"));
@@ -15,9 +17,58 @@ const DrugHistory = lazy(() => import("@/pages/DrugHistory"));
 const Reminder = lazy(() => import("@/pages/Reminder"));
 const Setting = lazy(() => import("@/pages/Setting"));
 
+// Keyframes animasi titik bergelombang
+const waveDots = keyframes`
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+`;
+
+// Loader custom
 const LoadingScreen = () => (
-  <Center h="100vh">
-    <Spinner size="xl" />
+  <Center
+    position="fixed"
+    top={0}
+    left={0}
+    w="100vw"
+    h="100vh"
+    bg="rgba(255, 255, 255, 0.95)"
+    zIndex={99999}
+  >
+    <Flex gap="8px">
+      <Box
+        w="14px"
+        h="14px"
+        borderRadius="50%"
+        bg="blue.500"
+        css={css`
+          animation: ${waveDots} 1.4s infinite ease-in-out;
+        `}
+      />
+      <Box
+        w="14px"
+        h="14px"
+        borderRadius="50%"
+        bg="blue.500"
+        css={css`
+          animation: ${waveDots} 1.4s infinite ease-in-out;
+          animation-delay: -0.16s;
+        `}
+      />
+      <Box
+        w="14px"
+        h="14px"
+        borderRadius="50%"
+        bg="blue.500"
+        css={css`
+          animation: ${waveDots} 1.4s infinite ease-in-out;
+          animation-delay: -0.32s;
+        `}
+      />
+    </Flex>
   </Center>
 );
 
@@ -26,27 +77,26 @@ const LayoutWrapper: React.FC = () => {
   const Layout = isMobile ? MobileLayout : DesktopLayout;
 
   return (
-    <>
-      <Suspense fallback={<LoadingScreen />}>
-        <Layout />
-      </Suspense>
+    <Suspense fallback={<LoadingScreen />}>
+      <Layout />
+
       {/* Footer */}
       <Box
         position="fixed"
         bottom={0}
-        right={{ base: "50%", md: 0 }} // di HP, posisikan ke tengah
-        transform={{ base: "translateX(50%)", md: "none" }} // geser agar pas di tengah
+        right={{ base: "50%", md: 0 }}
+        transform={{ base: "translateX(50%)", md: "none" }}
         p={2}
         bg="gray.200"
-        borderTopLeftRadius={{ base: "none", md: "md" }} // di HP, tidak ada radius
+        borderTopLeftRadius={{ base: "none", md: "md" }}
         color="black"
         fontSize="12px"
-        textAlign={{ base: "center", md: "right" }} // teks tengah di HP
-        w={{ base: "100%", md: "auto" }} // di HP, lebar penuh
+        textAlign={{ base: "center", md: "right" }}
+        w={{ base: "100%", md: "auto" }}
       >
         © 2025 Vision Medicine. All rights reserved.
       </Box>
-    </>
+    </Suspense>
   );
 };
 
