@@ -1,8 +1,38 @@
-# Responsive Website
+# Vision Medicine Website
+Deskripsi
 
-Proyek React dengan Vite, Tailwind, dan Chakra UI. Punya sidebar responsif untuk desktop dan mobile.
+## Live Demo
+Website URL: 
 
-## Cara Run
+## Badges
 
-- npm install
-- npm run dev
+## 📋 Table of Contents
+
+## 🌟 Features
+
+## 🏗 Project Architecture
+- Client Browser
+- Frontend
+- Backend
+- Database
+
+- Penjelasan masing masing Architecture
+
+## Tech Stack
+- Frontend : 
+- Backend  :
+
+## Project Structure
+
+## 📝 API Documentation
+- Authentication Endpoints
+- Product Endpoints
+- Cart Endpoints
+- Order/Checkout Endpoints
+- Category & Weight Endpoints
+- User Profile & Address Endpoints
+- Admin Endpoints
+- Chat Endpoints
+
+## ⚙️ Installation & Setup
+- Prerequisites
