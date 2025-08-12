@@ -33,10 +33,9 @@ const MobileSidebar: React.FC = () => {
         pos="fixed"
         top={4}
         left={4}
-        zIndex={40}
+        zIndex={2000}
         onClick={onOpen}
       >
-        {/* Hamburger putih tebal */}
         <Menu size={26} strokeWidth={3} color="white" />
       </IconButton>
 
@@ -49,22 +48,36 @@ const MobileSidebar: React.FC = () => {
         placement="start"
         size="xs"
       >
-        <DrawerBackdrop />
+        {/* Backdrop tetap fixed */}
+        <DrawerBackdrop
+          position="fixed"
+          top={0}
+          left={0}
+          w="100vw"
+          h="100vh"
+          zIndex={1999}
+          onClick={onClose}
+        />
+
+        {/* Sidebar tetap fixed */}
         <DrawerContent
+          position="fixed"
+          top={0}
+          left={0}
           bg="white"
           maxW="260px"
           h="100vh"
           display="flex"
           flexDirection="column"
+          zIndex={2000}
         >
           <DrawerCloseTrigger
             asChild
             pos="absolute"
             top={3}
             right={3}
-            zIndex={50}
+            zIndex={2001}
           >
-            {/* Close Button hitam, tebal, tanpa kotak */}
             <IconButton
               aria-label="Close Menu"
               variant="ghost"
@@ -72,14 +85,15 @@ const MobileSidebar: React.FC = () => {
               _hover={{ bg: "transparent" }}
               _active={{ bg: "transparent" }}
               _focus={{ boxShadow: "none" }}
+              onClick={onClose}
             >
               <X size={24} strokeWidth={3} color="black" />
             </IconButton>
           </DrawerCloseTrigger>
 
-          <DrawerBody p={4} pt={12} overflowY="auto" flex="1">
-            {/* Logo */}
-            <VStack mb={6}>
+          <DrawerBody p={4} pt={3} overflowY="auto" flex="1">
+            {/* Logo agak naik */}
+            <VStack mb={2} mt={-2}>
               <NavLink to="/" onClick={onClose}>
                 <Image
                   src="/Logo VISMED Official.png"
