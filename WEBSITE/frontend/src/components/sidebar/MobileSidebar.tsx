@@ -1,6 +1,7 @@
 import React from "react";
 import {
   VStack,
+  HStack,
   Icon,
   IconButton,
   useDisclosure,
@@ -48,7 +49,7 @@ const MobileSidebar: React.FC = () => {
         placement="start"
         size="xs"
       >
-        {/* Backdrop tetap fixed */}
+        {/* Backdrop */}
         <DrawerBackdrop
           position="fixed"
           top={0}
@@ -59,13 +60,13 @@ const MobileSidebar: React.FC = () => {
           onClick={onClose}
         />
 
-        {/* Sidebar tetap fixed */}
+        {/* Sidebar */}
         <DrawerContent
           position="fixed"
           top={0}
           left={0}
           bg="white"
-          maxW="260px"
+          maxW="200px"
           h="100vh"
           display="flex"
           flexDirection="column"
@@ -75,7 +76,7 @@ const MobileSidebar: React.FC = () => {
             asChild
             pos="absolute"
             top={3}
-            right={3}
+            right={2}
             zIndex={2001}
           >
             <IconButton
@@ -92,43 +93,44 @@ const MobileSidebar: React.FC = () => {
           </DrawerCloseTrigger>
 
           <DrawerBody p={4} pt={3} overflowY="auto" flex="1">
-            {/* Logo agak naik */}
-            <VStack mb={2} mt={-2}>
-              <NavLink to="/" onClick={onClose}>
-                <Image
-                  src="/Logo VISMED Official.png"
-                  alt="VISMED Logo"
-                  maxW="100px"
-                  boxSize="80px"
-                  objectFit="contain"
-                  mx="auto"
-                />
-              </NavLink>
-            </VStack>
-
-            {/* Menu Items */}
-            <VStack align="stretch" gap={3}>
-              {MENU_ITEMS.map((item) => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={onClose}
-                  style={({ isActive }) => ({
-                    textDecoration: "none",
-                    backgroundColor: isActive ? "#E2E8F0" : "transparent",
-                    borderRadius: "8px",
-                    padding: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    color: "#1A202C",
-                    fontWeight: "bold",
-                  })}
-                >
-                  <Icon as={item.icon} boxSize={5} color="#1A202C" />
-                  <Text>{item.label}</Text>
+            {/* Logo + Menu Items dalam VStack */}
+            <VStack align="stretch" gap={4}>
+              {/* Logo sejajar kiri */}
+              <HStack mb={2} mt={-3}>
+                <NavLink to="/" onClick={onClose}>
+                  <Image
+                    src="/Logo VISMED Official.png"
+                    alt="VISMED Logo"
+                    boxSize="60px"
+                    objectFit="contain"
+                  />
                 </NavLink>
-              ))}
+              </HStack>
+
+              {/* Menu Items */}
+              <VStack align="stretch" gap={3}>
+                {MENU_ITEMS.map((item) => (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    onClick={onClose}
+                    style={({ isActive }) => ({
+                      textDecoration: "none",
+                      backgroundColor: isActive ? "#E2E8F0" : "transparent",
+                      borderRadius: "8px",
+                      padding: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      color: "#1A202C",
+                      fontWeight: "bold",
+                    })}
+                  >
+                    <Icon as={item.icon} boxSize={5} color="#1A202C" />
+                    <Text>{item.label}</Text>
+                  </NavLink>
+                ))}
+              </VStack>
             </VStack>
           </DrawerBody>
         </DrawerContent>

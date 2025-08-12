@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Box,
   Stack,
@@ -12,9 +12,15 @@ import { NavLink } from "react-router-dom";
 import { MENU_ITEMS } from "@/utils/constants";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const DesktopSidebar: React.FC = () => {
-  const [isOpen, setIsOpen] = useState(true);
+interface DesktopSidebarProps {
+  isOpen: boolean;
+  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
 
+const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
+  isOpen,
+  setIsOpen,
+}) => {
   return (
     <Box
       w={isOpen ? "250px" : "80px"}
@@ -28,6 +34,7 @@ const DesktopSidebar: React.FC = () => {
       boxShadow="2px 0 10px 4px rgba(255, 255, 255, 0.4)"
       transition="width 0.3s ease"
       overflow="hidden"
+      zIndex={10}
     >
       {/* Header: Logo kiri, Toggle button kanan */}
       <HStack mb={10} justifyContent={isOpen ? "space-between" : "center"}>
