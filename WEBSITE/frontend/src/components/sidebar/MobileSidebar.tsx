@@ -124,7 +124,9 @@ const MobileSidebar: React.FC = () => {
                       gap: "8px",
                       color: "#1A202C",
                       fontWeight: "bold",
+                      transition: "background-color 0.2s ease",
                     })}
+                    className="mobile-sidebar-link"
                   >
                     <Icon as={item.icon} boxSize={5} color="#1A202C" />
                     <Text>{item.label}</Text>
@@ -135,6 +137,15 @@ const MobileSidebar: React.FC = () => {
           </DrawerBody>
         </DrawerContent>
       </DrawerRoot>
+
+      <style>
+        {`
+          .mobile-sidebar-link:hover {
+            background-color: #E2E8F0 !important;
+            border-radius: 8px;
+          }
+        `}
+      </style>
     </>
   );
 };

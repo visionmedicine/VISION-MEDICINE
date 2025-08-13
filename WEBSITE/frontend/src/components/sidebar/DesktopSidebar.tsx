@@ -36,7 +36,7 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
       overflow="hidden"
       zIndex={10}
     >
-      {/* Header: Logo kiri, Toggle button kanan */}
+      {/* Header */}
       <HStack mb={10} justifyContent={isOpen ? "space-between" : "center"}>
         {isOpen && (
           <NavLink to="/">
@@ -71,7 +71,7 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
         </IconButton>
       </HStack>
 
-      {/* Jika sidebar ditutup, tampilkan logo di bawah ikon panah */}
+      {/* Logo saat sidebar tertutup */}
       {!isOpen && (
         <Box mb={10} textAlign="center">
           <NavLink to="/">
@@ -103,7 +103,9 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
               display: "flex",
               alignItems: "center",
               justifyContent: isOpen ? "flex-start" : "center",
+              transition: "background-color 0.2s ease",
             })}
+            className="sidebar-link"
           >
             <HStack gap={isOpen ? 3 : 0} w="100%">
               <Icon as={item.icon} boxSize={5} color="black" />
@@ -120,6 +122,15 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
           </NavLink>
         ))}
       </Stack>
+
+      <style>
+        {`
+          .sidebar-link:hover {
+            background-color: #E2E8F0 !important;
+            border-radius: 8px;
+          }
+        `}
+      </style>
     </Box>
   );
 };
