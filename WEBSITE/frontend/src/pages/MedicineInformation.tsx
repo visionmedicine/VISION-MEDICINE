@@ -138,32 +138,42 @@ const MedicineInformation = () => {
   }, [filteredMedicines, openStates]);
 
   return (
-    <Flex direction="column" h="100vh" w="100%" bg="#242424" p={4}>
+    <Flex
+      direction="column"
+      h="100vh"
+      w="100%"
+      bg="#242424"
+      p={{ base: 2, md: 4 }}
+    >
       {/* Header */}
       <Flex
         align="center"
         justify="center"
         bg="#2f2f2f"
-        px={4}
-        py={3}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2, md: 3 }}
         borderBottom="4px solid"
         borderColor="gray.600"
         borderRadius="2xl"
       >
         <HStack gap={2}>
           <FaPills size={24} color="white" />
-          <Text fontSize="xl" fontWeight="bold" color="white">
+          <Text
+            fontSize={{ base: "lg", md: "xl" }}
+            fontWeight="bold"
+            color="white"
+          >
             Medicine Information
           </Text>
         </HStack>
       </Flex>
 
-      {/* Medicine List Area */}
+      {/* Medicine List */}
       <Box
         ref={containerRef}
         flex="1"
         overflowY="auto"
-        p={4}
+        p={{ base: 3, md: 4 }}
         onScroll={checkIfAtBottom}
       >
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
@@ -181,19 +191,27 @@ const MedicineInformation = () => {
                 _hover={{ boxShadow: "lg", transform: "translateY(-2px)" }}
               >
                 <HStack
-                  px={4}
-                  py={3}
+                  px={{ base: 3, md: 4 }}
+                  py={{ base: 2, md: 3 }}
                   cursor="pointer"
                   justify="space-between"
                   borderBottom={openStates[idx] ? "1px solid" : "none"}
                   borderColor="gray.600"
                   onClick={() => toggleDropdown(idx)}
                 >
-                  <Text fontWeight="bold">{med.name}</Text>
+                  <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
+                    {med.name}
+                  </Text>
                   {openStates[idx] ? <FaChevronUp /> : <FaChevronDown />}
                 </HStack>
                 <Collapse in={openStates[idx]} animateOpacity>
-                  <Box px={4} py={3} bg="gray.700" borderRadius="0 0 2xl 2xl">
+                  <Box
+                    px={{ base: 3, md: 4 }}
+                    py={{ base: 2, md: 3 }}
+                    bg="gray.700"
+                    borderRadius="0 0 2xl 2xl"
+                    fontSize={{ base: "sm", md: "md" }}
+                  >
                     <Text mb={2}>
                       <strong>Kegunaan:</strong> {med.use}
                     </Text>
@@ -211,7 +229,7 @@ const MedicineInformation = () => {
             <Text
               color="white"
               textAlign="center"
-              fontSize="lg"
+              fontSize={{ base: "md", md: "lg" }}
               gridColumn="span 2"
             >
               Tidak ada obat ditemukan.
@@ -224,65 +242,70 @@ const MedicineInformation = () => {
       <Box
         borderTop="4px solid"
         borderColor="gray.600"
-        p={4}
+        p={{ base: 2, md: 3 }}
         bg="#2f2f2f"
         borderRadius="2xl"
         boxShadow="md"
+        position="relative"
       >
-        <HStack gap={3} position="relative">
-          {/* Microphone icon */}
-          <Box
-            position="absolute"
-            left={2}
-            top="50%"
-            transform="translateY(-50%)"
-          >
-            <FaMicrophone size={20} color="white" />
-          </Box>
+        {/* Mic icon (left) */}
+        <IconButton
+          aria-label="Mic"
+          size={{ base: "sm", md: "md" }}
+          variant="ghost"
+          colorScheme="blue"
+          position="absolute"
+          left={{ base: "6px", md: "10px" }}
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex="1"
+        >
+          <FaMicrophone size={16} />
+        </IconButton>
 
-          {/* Input field */}
-          <Input
-            placeholder="Cari obat, kegunaan, atau efek samping..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            pl="40px"
-            pr="96px"
-            color="black"
-            bg="white"
-            borderRadius="2xl"
-            fontSize="md"
-            _focus={{
-              borderColor: "blue.400",
-              boxShadow: "0 0 0 1px blue.400",
-            }}
-          />
+        {/* Input field */}
+        <Input
+          placeholder="Cari obat, kegunaan, atau efek samping..."
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          pl={{ base: "35px", md: "40px" }}
+          pr={{ base: "90px", md: "110px" }} // ruang untuk search + clear
+          color="black"
+          bg="white"
+          borderRadius="2xl"
+          fontSize={{ base: "sm", md: "md" }}
+        />
 
-          {/* Search icon */}
-          <Box
-            position="absolute"
-            right="44px"
-            top="50%"
-            transform="translateY(-50%)"
-          >
-            <FaSearch size={18} color="white" />
-          </Box>
+        {/* Search icon */}
+        <IconButton
+          aria-label="Search"
+          size={{ base: "sm", md: "md" }}
+          variant="ghost"
+          colorScheme="blue"
+          position="absolute"
+          right={{ base: "35px", md: "50px" }}
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex="1"
+        >
+          <FaSearch size={18} />
+        </IconButton>
 
-          {/* Reset icon */}
-          <IconButton
-            aria-label="Reset"
-            size="md"
-            variant="ghost"
-            colorScheme="blue"
-            onClick={handleReset}
-            position="absolute"
-            right="8px"
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex={1}
-          >
-            <FaTimes size={18} />
-          </IconButton>
-        </HStack>
+        {/* Reset icon */}
+        <IconButton
+          aria-label="Reset"
+          size={{ base: "sm", md: "md" }}
+          variant="ghost"
+          colorScheme="blue"
+          onClick={handleReset}
+          position="absolute"
+          right={{ base: "6px", md: "8px" }}
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex="1"
+        >
+          <FaTimes size={18} />
+        </IconButton>
       </Box>
     </Flex>
   );
