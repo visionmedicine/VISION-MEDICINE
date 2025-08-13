@@ -53,23 +53,33 @@ const ChatConversation = () => {
   }, [messages]);
 
   return (
-    <Flex direction="column" h="100vh" w="100%" bg="#242424" p={2}>
+    <Flex
+      direction="column"
+      h="100vh"
+      w="100%"
+      bg="#242424"
+      p={{ base: 2, md: 4 }}
+    >
       {/* Header */}
       <Flex
         align="center"
         justify="center"
         bg="#2f2f2f"
         color="black"
-        px={4}
-        py={3}
+        px={{ base: 3, md: 4 }}
+        py={{ base: 2, md: 3 }}
         borderBottom="4px solid"
         borderColor="gray.600"
         boxShadow="sm"
         borderRadius="2xl"
       >
         <HStack gap={2}>
-          <FiMic size={20} color="white" />
-          <Text fontSize="xl" fontWeight="bold" color="white">
+          <FiMic size={24} color="white" />
+          <Text
+            fontSize={{ base: "lg", md: "xl" }}
+            fontWeight="bold"
+            color="white"
+          >
             VISMED Talks
           </Text>
         </HStack>
@@ -80,22 +90,23 @@ const ChatConversation = () => {
         ref={chatContainerRef}
         flex="1"
         overflowY="auto"
-        p={4}
+        p={{ base: 3, md: 4 }}
         onScroll={checkIfAtBottom}
       >
         <VStack gap={3} align="stretch">
           {messages.map((msg, idx) => (
             <Box
               key={idx}
-              maxW="70%"
+              maxW={{ base: "85%", md: "70%" }}
               alignSelf={msg.from === "vismed" ? "flex-start" : "flex-end"}
               bg={msg.from === "vismed" ? "#445775" : "#D9D9D9"}
               color={msg.from === "vismed" ? "white" : "black"}
-              px={4}
-              py={2}
+              px={{ base: 3, md: 4 }}
+              py={{ base: 2, md: 2 }}
               borderRadius="xl"
               wordBreak="break-word"
               boxShadow="sm"
+              fontSize={{ base: "sm", md: "md" }}
             >
               {msg.text}
             </Box>
@@ -107,7 +118,7 @@ const ChatConversation = () => {
       <Box
         borderTop="4px solid"
         borderColor="gray.600"
-        p={3}
+        p={{ base: 2, md: 3 }}
         bg="#2f2f2f"
         position="relative"
         borderRadius="2xl"
@@ -115,11 +126,11 @@ const ChatConversation = () => {
         {/* Mic button */}
         <IconButton
           aria-label="Mic"
-          size="sm"
+          size={{ base: "sm", md: "md" }}
           variant="ghost"
           colorScheme="blue"
           position="absolute"
-          left="10px"
+          left={{ base: "6px", md: "10px" }}
           top="50%"
           transform="translateY(-50%)"
           zIndex="1"
@@ -135,22 +146,23 @@ const ChatConversation = () => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSend();
           }}
-          pl="40px"
-          pr="40px"
+          pl={{ base: "35px", md: "40px" }}
+          pr={{ base: "35px", md: "40px" }}
           color="black"
           bg="white"
           borderRadius="2xl"
+          fontSize={{ base: "sm", md: "md" }}
         />
 
         {/* Send button */}
         <IconButton
           aria-label="Send"
-          size="sm"
+          size={{ base: "sm", md: "md" }}
           variant="ghost"
           colorScheme="blue"
           onClick={handleSend}
           position="absolute"
-          right="10px"
+          right={{ base: "6px", md: "10px" }}
           top="50%"
           transform="translateY(-50%)"
           zIndex="1"
