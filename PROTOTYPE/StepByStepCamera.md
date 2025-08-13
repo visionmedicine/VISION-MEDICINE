@@ -1,0 +1,13 @@
+- python3 -m venv --system-site-packages venv
+- source venv/bin/activate
+- sudo apt update
+- sudo apt install python3-pip -y
+- pip install -U pip 
+- pip install ultralytics[export]
+- reboot
+- yolo export model=obat.pt format=ncnn
+===============================================
+- pip install portalocker
+- pip install --no-cache-dir --upgrade pip setuptools wheel
+- pip install picamera2 --no-deps
+- pip install --no-cache-dir --force-reinstall simplejpeg
