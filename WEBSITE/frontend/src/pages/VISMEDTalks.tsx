@@ -19,7 +19,7 @@ const ChatConversation = () => {
     },
   ]);
   const [input, setInput] = useState("");
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -36,33 +36,37 @@ const ChatConversation = () => {
     }, 1000);
   };
 
+  // Scroll ke atas saat pertama kali load halaman
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = 0;
+    }
+  }, []);
 
   return (
-    <Flex direction="column" h="100vh" w="100%" bg="#242424">
+    <Flex direction="column" h="100vh" w="100%" bg="#242424" p={2}>
       {/* Header */}
       <Flex
         align="center"
-        bg="#1e1e1e"
-        color="white"
+        bg="white"
+        color="black"
         px={4}
         py={3}
         borderBottom="1px solid"
-        borderColor="gray.700"
+        borderColor="gray.300"
         boxShadow="sm"
+        borderRadius="xl" // header bg membulat
       >
         <HStack gap={2}>
-          <FiMic size={20} />
-          <Text fontSize="lg" fontWeight="bold">
+          <FiMic size={20} color="black" />
+          <Text fontSize="xl" fontWeight="bold" color="black">
             VISMED Talks
           </Text>
         </HStack>
       </Flex>
 
       {/* Chat Area */}
-      <Box flex="1" overflowY="auto" p={4}>
+      <Box ref={chatContainerRef} flex="1" overflowY="auto" p={4}>
         <VStack gap={3} align="stretch">
           {messages.map((msg, idx) => (
             <Box
@@ -73,24 +77,24 @@ const ChatConversation = () => {
               color={msg.from === "vismed" ? "white" : "black"}
               px={4}
               py={2}
-              borderRadius="md"
+              borderRadius="xl" // bubble chat membulat
               wordBreak="break-word"
               boxShadow="sm"
             >
               {msg.text}
             </Box>
           ))}
-          <div ref={chatEndRef} />
         </VStack>
       </Box>
 
       {/* Input Area */}
       <Box
-        borderTop="1px solid"
+        borderTop="4px solid"
         borderColor="gray.600"
         p={3}
         bg="#2f2f2f"
         position="relative"
+        borderRadius="2xl" // input bar membulat juga biar konsisten
       >
         {/* Mic button */}
         <IconButton
