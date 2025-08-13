@@ -15,6 +15,7 @@ import {
   FaTimes,
   FaChevronDown,
   FaChevronUp,
+  FaMicrophone,
 } from "react-icons/fa";
 
 interface Medicine {
@@ -98,7 +99,7 @@ const MedicineInformation = () => {
     setFilteredMedicines(medicines);
   }, []);
 
-  const handleSearch = () => {
+  useEffect(() => {
     if (!input.trim()) {
       setFilteredMedicines(medicines);
       setOpenStates({});
@@ -111,9 +112,8 @@ const MedicineInformation = () => {
         med.sideEffects.toLowerCase().includes(input.trim().toLowerCase())
     );
     setFilteredMedicines(filtered);
-    setInput("");
     setOpenStates({});
-  };
+  }, [input]);
 
   const handleReset = () => {
     setInput("");
@@ -230,24 +230,21 @@ const MedicineInformation = () => {
         boxShadow="md"
       >
         <HStack gap={3} position="relative">
-          <IconButton
-            aria-label="Mic"
-            size="md"
-            variant="ghost"
-            colorScheme="blue"
+          {/* Microphone icon */}
+          <Box
             position="absolute"
             left={2}
             top="50%"
             transform="translateY(-50%)"
-            zIndex={1}
           >
-            <FaPills size={20} />
-          </IconButton>
+            <FaMicrophone size={20} color="white" />
+          </Box>
+
+          {/* Input field */}
           <Input
             placeholder="Cari obat, kegunaan, atau efek samping..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             pl="40px"
             pr="96px"
             color="black"
@@ -259,20 +256,18 @@ const MedicineInformation = () => {
               boxShadow: "0 0 0 1px blue.400",
             }}
           />
-          <IconButton
-            aria-label="Search"
-            size="md"
-            variant="ghost"
-            colorScheme="blue"
-            onClick={handleSearch}
+
+          {/* Search icon */}
+          <Box
             position="absolute"
             right="44px"
             top="50%"
             transform="translateY(-50%)"
-            zIndex={1}
           >
-            <FaSearch size={18} />
-          </IconButton>
+            <FaSearch size={18} color="white" />
+          </Box>
+
+          {/* Reset icon */}
           <IconButton
             aria-label="Reset"
             size="md"

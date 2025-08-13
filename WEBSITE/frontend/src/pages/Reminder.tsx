@@ -83,7 +83,7 @@ const Reminder = () => {
       {/* Header */}
       <Flex
         align="center"
-        justify="flex-start"
+        justify="center"
         bg="#2f2f2f"
         px={{ base: 3, md: 4 }}
         py={{ base: 2, md: 3 }}
