@@ -79,23 +79,6 @@ const LayoutWrapper: React.FC = () => {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Layout />
-
-      {/* Footer */}
-      <Box
-        position="fixed"
-        bottom={0}
-        right={{ base: "50%", md: 0 }}
-        transform={{ base: "translateX(50%)", md: "none" }}
-        p={2}
-        bg="gray.200"
-        borderTopLeftRadius={{ base: "none", md: "md" }}
-        color="black"
-        fontSize="12px"
-        textAlign={{ base: "center", md: "right" }}
-        w={{ base: "100%", md: "auto" }}
-      >
-        © 2025 Vision Medicine. All rights reserved.
-      </Box>
     </Suspense>
   );
 };
