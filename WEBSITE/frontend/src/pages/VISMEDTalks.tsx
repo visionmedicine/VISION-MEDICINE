@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Box, Flex, Input, IconButton, VStack } from "@chakra-ui/react";
+import { useState, useRef, useEffect } from "react";
+import { Box, Flex, Input, VStack, IconButton } from "@chakra-ui/react";
 import { FiMic, FiSend } from "react-icons/fi";
 
 const ChatConversation = () => {
@@ -11,24 +11,30 @@ const ChatConversation = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   const handleSend = () => {
     if (!input.trim()) return;
-    setMessages([...messages, { from: "user", text: input.trim() }]);
+
+    setMessages((prev) => [...prev, { from: "user", text: input.trim() }]);
     setInput("");
 
     // Simulasi balasan VISMED
     setTimeout(() => {
-      setMessages((msgs) => [
-        ...msgs,
+      setMessages((prev) => [
+        ...prev,
         { from: "vismed", text: "Terima kasih atas pertanyaannya!" },
       ]);
     }, 1000);
   };
 
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
-    <Flex direction="column" h="100vh" w="100%" bg="black">
-      {/* Chat area */}
+    <Flex direction="column" h="100vh" w="100%" bg="#242424">
+      {/* Chat Area */}
       <Box flex="1" overflowY="auto" p={4}>
         <VStack gap={3} align="stretch">
           {messages.map((msg, idx) => (
@@ -47,26 +53,34 @@ const ChatConversation = () => {
               {msg.text}
             </Box>
           ))}
+          <div ref={chatEndRef} />
         </VStack>
       </Box>
 
-      {/* Input area */}
-      <Flex
-        align="center"
-        gap={3}
+      {/* Input Area */}
+      <Box
         borderTop="1px solid"
-        borderColor="gray.200"
+        borderColor="gray.600"
         p={3}
+        bg="#2f2f2f"
+        position="relative"
       >
+        {/* Mic button */}
         <IconButton
           aria-label="Mic"
-          size="md"
-          colorScheme="blue"
+          size="sm"
           variant="ghost"
-          _focus={{ boxShadow: "none" }}
+          colorScheme="blue"
+          position="absolute"
+          left="10px"
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex="1"
         >
           <FiMic />
         </IconButton>
+
+        {/* Input */}
         <Input
           placeholder="Tulis pesan..."
           value={input}
@@ -74,18 +88,29 @@ const ChatConversation = () => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSend();
           }}
-          flex="1"
+          pl="40px"
+          pr="40px"
+          color="black" // teks input hitam
+          bg="white"
+          borderRadius="2xl"
         />
+
+        {/* Send button */}
         <IconButton
           aria-label="Send"
-          size="md"
+          size="sm"
+          variant="ghost"
           colorScheme="blue"
           onClick={handleSend}
-          _focus={{ boxShadow: "none" }}
+          position="absolute"
+          right="10px"
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex="1"
         >
           <FiSend />
         </IconButton>
-      </Flex>
+      </Box>
     </Flex>
   );
 };
