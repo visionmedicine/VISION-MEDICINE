@@ -1,5 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import { Box, Flex, Input, VStack, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Input,
+  VStack,
+  IconButton,
+  Text,
+  HStack,
+} from "@chakra-ui/react";
 import { FiMic, FiSend } from "react-icons/fi";
 
 const ChatConversation = () => {
@@ -34,6 +42,25 @@ const ChatConversation = () => {
 
   return (
     <Flex direction="column" h="100vh" w="100%" bg="#242424">
+      {/* Header */}
+      <Flex
+        align="center"
+        bg="#1e1e1e"
+        color="white"
+        px={4}
+        py={3}
+        borderBottom="1px solid"
+        borderColor="gray.700"
+        boxShadow="sm"
+      >
+        <HStack gap={2}>
+          <FiMic size={20} />
+          <Text fontSize="lg" fontWeight="bold">
+            VISMED Talks
+          </Text>
+        </HStack>
+      </Flex>
+
       {/* Chat Area */}
       <Box flex="1" overflowY="auto" p={4}>
         <VStack gap={3} align="stretch">
@@ -90,7 +117,7 @@ const ChatConversation = () => {
           }}
           pl="40px"
           pr="40px"
-          color="black" // teks input hitam
+          color="black"
           bg="white"
           borderRadius="2xl"
         />
