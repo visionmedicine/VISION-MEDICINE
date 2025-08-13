@@ -20,6 +20,7 @@ const ChatConversation = () => {
   ]);
   const [input, setInput] = useState("");
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScroll = useRef(true);
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -36,37 +37,52 @@ const ChatConversation = () => {
     }, 1000);
   };
 
-  // Scroll ke atas saat pertama kali load halaman
+  // Cek apakah user di bawah sebelum pesan baru masuk
+  const checkIfAtBottom = () => {
+    if (!chatContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    shouldAutoScroll.current = scrollTop + clientHeight >= scrollHeight - 10;
+  };
+
+  // Auto scroll kalau memang di bawah
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = 0;
+    if (shouldAutoScroll.current && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
-  }, []);
+  }, [messages]);
 
   return (
     <Flex direction="column" h="100vh" w="100%" bg="#242424" p={2}>
       {/* Header */}
       <Flex
         align="center"
-        bg="white"
+        justify="center"
+        bg="#2f2f2f"
         color="black"
         px={4}
         py={3}
-        borderBottom="1px solid"
-        borderColor="gray.300"
+        borderBottom="4px solid"
+        borderColor="gray.600"
         boxShadow="sm"
-        borderRadius="xl" // header bg membulat
+        borderRadius="2xl"
       >
         <HStack gap={2}>
-          <FiMic size={20} color="black" />
-          <Text fontSize="xl" fontWeight="bold" color="black">
+          <FiMic size={20} color="white" />
+          <Text fontSize="xl" fontWeight="bold" color="white">
             VISMED Talks
           </Text>
         </HStack>
       </Flex>
 
       {/* Chat Area */}
-      <Box ref={chatContainerRef} flex="1" overflowY="auto" p={4}>
+      <Box
+        ref={chatContainerRef}
+        flex="1"
+        overflowY="auto"
+        p={4}
+        onScroll={checkIfAtBottom}
+      >
         <VStack gap={3} align="stretch">
           {messages.map((msg, idx) => (
             <Box
@@ -77,7 +93,7 @@ const ChatConversation = () => {
               color={msg.from === "vismed" ? "white" : "black"}
               px={4}
               py={2}
-              borderRadius="xl" // bubble chat membulat
+              borderRadius="xl"
               wordBreak="break-word"
               boxShadow="sm"
             >
@@ -94,7 +110,7 @@ const ChatConversation = () => {
         p={3}
         bg="#2f2f2f"
         position="relative"
-        borderRadius="2xl" // input bar membulat juga biar konsisten
+        borderRadius="2xl"
       >
         {/* Mic button */}
         <IconButton
