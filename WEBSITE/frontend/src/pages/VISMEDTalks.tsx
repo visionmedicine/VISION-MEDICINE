@@ -4,7 +4,7 @@ import { FiMic, FiSend } from "react-icons/fi";
 
 const ChatConversation = () => {
   const [messages, setMessages] = useState([
-    { from: "vismed", text: "Halo! Ada yang bisa saya bantu?" },
+    { from: "vismed", text: "Halo! Ada yang bisa VISMED bantu?" },
     {
       from: "user",
       text: "Halo VISMED, saya ingin tahu lebih tentang layanan Anda.",
