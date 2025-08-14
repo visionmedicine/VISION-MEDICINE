@@ -28,7 +28,12 @@ interface Medicine {
 const MedicineInformation = () => {
   const [input, setInput] = useState("");
   const [filteredMedicines, setFilteredMedicines] = useState<Medicine[]>([]);
-  const [openStates, setOpenStates] = useState<{ [key: number]: boolean }>({});
+  const [openStatesLeft, setOpenStatesLeft] = useState<{
+    [key: string]: boolean;
+  }>({});
+  const [openStatesRight, setOpenStatesRight] = useState<{
+    [key: string]: boolean;
+  }>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScroll = useRef(true);
 
@@ -93,6 +98,126 @@ const MedicineInformation = () => {
       dosage: "10 mg 3 kali sehari",
       sideEffects: "Mulut kering, sakit kepala",
     },
+    {
+      name: "Erythromycin",
+      use: "Infeksi saluran pernapasan",
+      dosage: "250-500 mg setiap 6 jam",
+      sideEffects: "Mual, diare",
+    },
+    {
+      name: "Fluoxetine",
+      use: "Mengatasi depresi",
+      dosage: "20-60 mg sekali sehari",
+      sideEffects: "Insomnia, mual",
+    },
+    {
+      name: "Furosemide",
+      use: "Mengurangi retensi cairan",
+      dosage: "20-80 mg sekali sehari",
+      sideEffects: "Dehidrasi, pusing",
+    },
+    {
+      name: "Gabapentin",
+      use: "Mengatasi nyeri saraf",
+      dosage: "300-900 mg per hari",
+      sideEffects: "Pusing, kelelahan",
+    },
+    {
+      name: "Hydrochlorothiazide",
+      use: "Mengatasi tekanan darah tinggi",
+      dosage: "12.5-50 mg sekali sehari",
+      sideEffects: "Hipokalemia, pusing",
+    },
+    {
+      name: "Ibuprofen",
+      use: "Meredakan nyeri dan peradangan",
+      dosage: "200-400 mg setiap 4-6 jam",
+      sideEffects: "Iritasi lambung, mual",
+    },
+    {
+      name: "Lansoprazole",
+      use: "Mengatasi asam lambung berlebih",
+      dosage: "15-30 mg sekali sehari",
+      sideEffects: "Sakit kepala, diare",
+    },
+    {
+      name: "Levothyroxine",
+      use: "Mengatasi hipotiroidisme",
+      dosage: "25-200 mcg sekali sehari",
+      sideEffects: "Insomnia, jantung berdebar",
+    },
+    {
+      name: "Lisinopril",
+      use: "Mengatasi hipertensi",
+      dosage: "10-40 mg sekali sehari",
+      sideEffects: "Batuk kering, pusing",
+    },
+    {
+      name: "Lorazepam",
+      use: "Mengatasi gangguan kecemasan",
+      dosage: "1-3 mg per hari",
+      sideEffects: "Mengantuk, kebingungan",
+    },
+    {
+      name: "Metformin",
+      use: "Mengontrol gula darah",
+      dosage: "500-2000 mg per hari",
+      sideEffects: "Mual, diare",
+    },
+    {
+      name: "Metoprolol",
+      use: "Mengatasi tekanan darah tinggi",
+      dosage: "50-200 mg sekali sehari",
+      sideEffects: "Kelelahan, pusing",
+    },
+    {
+      name: "Naproxen",
+      use: "Meredakan nyeri dan radang",
+      dosage: "250-500 mg setiap 12 jam",
+      sideEffects: "Iritasi lambung, mual",
+    },
+    {
+      name: "Omeprazole",
+      use: "Mengatasi maag",
+      dosage: "20-40 mg sekali sehari",
+      sideEffects: "Sakit kepala, diare",
+    },
+    {
+      name: "Paracetamol",
+      use: "Menurunkan demam",
+      dosage: "500-1000 mg setiap 4-6 jam",
+      sideEffects: "Jarang terjadi efek samping",
+    },
+    {
+      name: "Prednisone",
+      use: "Mengatasi peradangan",
+      dosage: "5-60 mg per hari",
+      sideEffects: "Kenaikan berat badan, insomnia",
+    },
+    {
+      name: "Ranitidine",
+      use: "Mengurangi asam lambung",
+      dosage: "150 mg 2 kali sehari",
+      sideEffects: "Sakit kepala, diare",
+    },
+    {
+      name: "Salbutamol",
+      use: "Mengatasi asma",
+      dosage: "100-200 mcg setiap 4-6 jam",
+      sideEffects: "Jantung berdebar, tremor",
+    },
+    {
+      name: "Simvastatin",
+      use: "Menurunkan kolesterol",
+      dosage: "10-40 mg sekali sehari",
+      sideEffects: "Nyeri otot, gangguan pencernaan",
+    },
+    {
+      name: "Warfarin",
+      use: "Mencegah pembekuan darah",
+      dosage: "2-10 mg sekali sehari",
+      sideEffects: "Perdarahan, memar",
+    },
   ].sort((a, b) => a.name.localeCompare(b.name));
 
   useEffect(() => {
@@ -102,7 +227,6 @@ const MedicineInformation = () => {
   useEffect(() => {
     if (!input.trim()) {
       setFilteredMedicines(medicines);
-      setOpenStates({});
       return;
     }
     const filtered = medicines.filter(
@@ -112,17 +236,21 @@ const MedicineInformation = () => {
         med.sideEffects.toLowerCase().includes(input.trim().toLowerCase())
     );
     setFilteredMedicines(filtered);
-    setOpenStates({});
   }, [input]);
 
   const handleReset = () => {
     setInput("");
     setFilteredMedicines(medicines);
-    setOpenStates({});
+    setOpenStatesLeft({});
+    setOpenStatesRight({});
   };
 
-  const toggleDropdown = (index: number) => {
-    setOpenStates((prev) => ({ ...prev, [index]: !prev[index] }));
+  const toggleDropdown = (name: string, column: "left" | "right") => {
+    if (column === "left") {
+      setOpenStatesLeft((prev) => ({ ...prev, [name]: !prev[name] }));
+    } else {
+      setOpenStatesRight((prev) => ({ ...prev, [name]: !prev[name] }));
+    }
   };
 
   const checkIfAtBottom = () => {
@@ -135,7 +263,7 @@ const MedicineInformation = () => {
     if (shouldAutoScroll.current && containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [filteredMedicines, openStates]);
+  }, [filteredMedicines, openStatesLeft, openStatesRight]);
 
   return (
     <Flex
@@ -178,53 +306,61 @@ const MedicineInformation = () => {
       >
         <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
           {filteredMedicines.length > 0 ? (
-            filteredMedicines.map((med, idx) => (
-              <Box
-                key={idx}
-                bg="#445775"
-                color="white"
-                borderRadius="2xl"
-                boxShadow="md"
-                display="flex"
-                flexDirection="column"
-                transition="all 0.2s"
-                _hover={{ boxShadow: "lg", transform: "translateY(-2px)" }}
-              >
-                <HStack
-                  px={{ base: 3, md: 4 }}
-                  py={{ base: 2, md: 3 }}
-                  cursor="pointer"
-                  justify="space-between"
-                  borderBottom={openStates[idx] ? "1px solid" : "none"}
-                  borderColor="gray.600"
-                  onClick={() => toggleDropdown(idx)}
+            filteredMedicines.map((med, index) => {
+              const column = index % 2 === 0 ? "left" : "right";
+              const isOpen =
+                column === "left"
+                  ? openStatesLeft[med.name]
+                  : openStatesRight[med.name];
+
+              return (
+                <Box
+                  key={med.name}
+                  bg="#445775"
+                  color="white"
+                  borderRadius="2xl"
+                  boxShadow="md"
+                  display="flex"
+                  flexDirection="column"
+                  transition="all 0.2s"
+                  _hover={{ boxShadow: "lg", transform: "translateY(-2px)" }}
                 >
-                  <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
-                    {med.name}
-                  </Text>
-                  {openStates[idx] ? <FaChevronUp /> : <FaChevronDown />}
-                </HStack>
-                <Collapse in={openStates[idx]} animateOpacity>
-                  <Box
+                  <HStack
                     px={{ base: 3, md: 4 }}
                     py={{ base: 2, md: 3 }}
-                    bg="gray.700"
-                    borderRadius="0 0 2xl 2xl"
-                    fontSize={{ base: "sm", md: "md" }}
+                    cursor="pointer"
+                    justify="space-between"
+                    borderBottom={isOpen ? "1px solid" : "none"}
+                    borderColor="gray.600"
+                    onClick={() => toggleDropdown(med.name, column)}
                   >
-                    <Text mb={2}>
-                      <strong>Kegunaan:</strong> {med.use}
+                    <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
+                      {med.name}
                     </Text>
-                    <Text mb={2}>
-                      <strong>Dosis:</strong> {med.dosage}
-                    </Text>
-                    <Text>
-                      <strong>Efek Samping:</strong> {med.sideEffects}
-                    </Text>
-                  </Box>
-                </Collapse>
-              </Box>
-            ))
+                    {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                  </HStack>
+                  <Collapse in={isOpen} animateOpacity>
+                    <Box
+                      px={{ base: 3, md: 4 }}
+                      py={{ base: 2, md: 3 }}
+                      bg="gray.700"
+                      borderRadius="0 0 2xl 2xl"
+                      fontSize={{ base: "sm", md: "md" }}
+                    >
+                      <Text mb={2}>
+                        <strong>Kegunaan:</strong> {med.use}
+                      </Text>
+                      <Text mb={2}>
+                        <strong>Dosis:</strong> {med.dosage}
+                      </Text>
+                      <Text>
+                        <strong>Efek Samping:</strong> {med.sideEffects}
+                      </Text>
+                    </Box>
+                  </Collapse>
+                </Box>
+              );
+            })
           ) : (
             <Text
               color="white"
@@ -248,7 +384,6 @@ const MedicineInformation = () => {
         boxShadow="md"
         position="relative"
       >
-        {/* Mic icon (left) */}
         <IconButton
           aria-label="Mic"
           size={{ base: "sm", md: "md" }}
@@ -263,20 +398,18 @@ const MedicineInformation = () => {
           <FaMicrophone size={16} />
         </IconButton>
 
-        {/* Input field */}
         <Input
           placeholder="Cari obat, kegunaan, atau efek samping..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           pl={{ base: "35px", md: "40px" }}
-          pr={{ base: "90px", md: "110px" }} // ruang untuk search + clear
+          pr={{ base: "90px", md: "110px" }}
           color="black"
           bg="white"
           borderRadius="2xl"
           fontSize={{ base: "sm", md: "md" }}
         />
 
-        {/* Search icon */}
         <IconButton
           aria-label="Search"
           size={{ base: "sm", md: "md" }}
@@ -291,7 +424,6 @@ const MedicineInformation = () => {
           <FaSearch size={18} />
         </IconButton>
 
-        {/* Reset icon */}
         <IconButton
           aria-label="Reset"
           size={{ base: "sm", md: "md" }}
