@@ -16,7 +16,8 @@ const NativeSelect = chakra("select");
 type ReminderRow = {
   medicine: string;
   date: string;
-  time: "AM" | "PM";
+  hour: string; // Jam 0-23
+  minute: string; // Menit 0-59
 };
 
 const medicines = [
@@ -26,13 +27,31 @@ const medicines = [
   "Vitamin C",
 ] as const;
 
-const timeOptions: Array<ReminderRow["time"]> = ["AM", "PM"];
+// Fungsi format tanggal ke DD <Bulan> YYYY
+const formatDateWithMonthName = (value: string) => {
+  if (!value) return "";
+  const monthNames = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const [year, month, day] = value.split("-");
+  const monthIndex = parseInt(month, 10) - 1;
+  return `${parseInt(day, 10)} ${monthNames[monthIndex]} ${year}`;
+};
 
 const Reminder = () => {
   const [reminders, setReminders] = useState<ReminderRow[]>([
-    { medicine: "", date: "", time: "AM" },
-    { medicine: "", date: "", time: "AM" },
-    { medicine: "", date: "", time: "AM" },
+    { medicine: "", date: "", hour: "", minute: "" },
   ]);
 
   const handleChange = (
@@ -49,15 +68,24 @@ const Reminder = () => {
 
   const handleSet = (index: number) => {
     const r = reminders[index];
+
+    if (!r.medicine || !r.date || !r.hour || !r.minute) {
+      alert("⚠️ Harap isi semua data sebelum menyimpan reminder!");
+      return;
+    }
+
     alert(
-      `Reminder diset: ${r.medicine || "Obat"} pada ${r.date || "tanggal"} ${
-        r.time
-      }`
+      `✅ Reminder diset: ${r.medicine}, Tanggal ${formatDateWithMonthName(
+        r.date
+      )}, Jam ${r.hour.padStart(2, "0")}:${r.minute.padStart(2, "0")}`
     );
   };
 
   const handleAdd = () => {
-    setReminders((prev) => [...prev, { medicine: "", date: "", time: "AM" }]);
+    setReminders((prev) => [
+      ...prev,
+      { medicine: "", date: "", hour: "", minute: "" },
+    ]);
     alert("Baris baru ditambahkan");
   };
 
@@ -70,6 +98,34 @@ const Reminder = () => {
       setReminders((prev) => prev.slice(0, -1));
       alert("Baris terakhir dihapus");
     }
+  };
+
+  const handleHourChange = (index: number, value: string) => {
+    const onlyNumbers = value.replace(/[^0-9]/g, "");
+    if (onlyNumbers === "") {
+      handleChange(index, "hour", "");
+      return;
+    }
+    const num = parseInt(onlyNumbers, 10);
+    if (num >= 0 && num <= 23) {
+      handleChange(index, "hour", onlyNumbers);
+    }
+  };
+
+  const handleMinuteChange = (index: number, value: string) => {
+    const onlyNumbers = value.replace(/[^0-9]/g, "");
+    if (onlyNumbers === "") {
+      handleChange(index, "minute", "");
+      return;
+    }
+    const num = parseInt(onlyNumbers, 10);
+    if (num >= 0 && num <= 59) {
+      handleChange(index, "minute", onlyNumbers);
+    }
+  };
+
+  const handleDateChange = (index: number, value: string) => {
+    handleChange(index, "date", value);
   };
 
   return (
@@ -104,8 +160,8 @@ const Reminder = () => {
         </HStack>
       </Flex>
 
-      {/* Action Buttons di bawah header */}
-      <HStack gap={2} justify="flex-start" mt={3} mb={2}>
+      {/* Action Buttons */}
+      <HStack gap={2} justify="flex-start" mt={3} mb={2} flexWrap="wrap">
         <Button
           onClick={handleAdd}
           bg="green.400"
@@ -142,20 +198,23 @@ const Reminder = () => {
       <Box flex="1" overflowY="auto" p={{ base: 3, md: 4 }}>
         <VStack gap={3} align="stretch">
           {reminders.map((reminder, idx) => (
-            <HStack
+            <Flex
               key={idx}
               gap={3}
               w="100%"
               align="center"
               justify="space-between"
-              flexWrap="nowrap"
+              flexDirection={{ base: "column", md: "row" }}
+              bg="#2f2f2f"
+              p={3}
+              borderRadius="xl"
+              borderBottom="4px solid"
+              borderColor="gray.600"
             >
-              {/* Nama Obat */}
+              {/* Obat */}
               <NativeSelect
                 value={reminder.medicine}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  handleChange(idx, "medicine", e.target.value)
-                }
+                onChange={(e) => handleChange(idx, "medicine", e.target.value)}
                 bg="white"
                 color="black"
                 borderRadius="xl"
@@ -164,7 +223,7 @@ const Reminder = () => {
                 py={2}
                 borderWidth="1px"
                 borderColor="gray.200"
-                minW="30%"
+                w={{ base: "100%", md: "25%" }}
               >
                 <option value="" disabled>
                   Pilih Obat
@@ -180,37 +239,44 @@ const Reminder = () => {
               <Input
                 type="date"
                 value={reminder.date}
-                onChange={(e) => handleChange(idx, "date", e.target.value)}
+                onChange={(e) => handleDateChange(idx, e.target.value)}
                 bg="white"
                 color="black"
                 borderRadius="xl"
                 fontSize="sm"
                 borderColor="gray.200"
-                minW="20%"
+                w={{ base: "100%", md: "20%" }}
               />
 
-              {/* Jam AM/PM */}
-              <NativeSelect
-                value={reminder.time}
-                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                  handleChange(idx, "time", e.target.value)
-                }
+              {/* Jam */}
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={reminder.hour}
+                onChange={(e) => handleHourChange(idx, e.target.value)}
                 bg="white"
                 color="black"
                 borderRadius="xl"
                 fontSize="sm"
-                px={3}
-                py={2}
-                borderWidth="1px"
                 borderColor="gray.200"
-                minW="20%"
-              >
-                {timeOptions.map((t) => (
-                  <option key={t} value={t}>
-                    {t === "AM" ? "A.M" : "P.M"}
-                  </option>
-                ))}
-              </NativeSelect>
+                w={{ base: "100%", md: "15%" }}
+                placeholder="Jam (0-23)"
+              />
+
+              {/* Menit */}
+              <Input
+                type="text"
+                inputMode="numeric"
+                value={reminder.minute}
+                onChange={(e) => handleMinuteChange(idx, e.target.value)}
+                bg="white"
+                color="black"
+                borderRadius="xl"
+                fontSize="sm"
+                borderColor="gray.200"
+                w={{ base: "100%", md: "15%" }}
+                placeholder="Menit (0-59)"
+              />
 
               {/* Tombol Set */}
               <Button
@@ -221,11 +287,11 @@ const Reminder = () => {
                 fontWeight="bold"
                 fontSize="sm"
                 _hover={{ bg: "#e59c00" }}
-                minW="15%"
+                w={{ base: "100%", md: "15%" }}
               >
                 Set
               </Button>
-            </HStack>
+            </Flex>
           ))}
         </VStack>
       </Box>
