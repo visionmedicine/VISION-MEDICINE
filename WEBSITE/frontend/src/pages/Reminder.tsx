@@ -177,7 +177,7 @@ const Reminder = () => {
       bg="#242424"
       p={{ base: 2, md: 4 }}
     >
-      {/* Header mengikuti style FindYourVISMED */}
+      {/* Header */}
       <Flex
         align="center"
         justify="center"
@@ -273,12 +273,13 @@ const Reminder = () => {
                 placeholder="Menit (0-59)"
               />
 
+              {/* Toggle & Delete — kiri di mobile, kanan di desktop */}
               <Flex
                 align="center"
                 gap={2}
-                order={{ base: 2, md: 2 }}
-                w={{ base: "100%", md: "auto" }}
                 justify={{ base: "flex-start", md: "flex-end" }}
+                ml={{ base: 0, md: "auto" }}
+                w={{ base: "100%", md: "auto" }}
               >
                 <label
                   style={{
