@@ -1,5 +1,3 @@
-/** @jsxImportSource @emotion/react */
-import { css } from "@emotion/react";
 import {
   Box,
   Heading,
@@ -67,7 +65,7 @@ const Home = () => {
     if (!ref.current) return;
     const firstCard = ref.current.querySelector(
       "div[data-step-card]"
-    ) as HTMLElement;
+    ) as HTMLElement | null;
     const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
     ref.current.scrollBy({
       left:
@@ -85,18 +83,125 @@ const Home = () => {
   useEffect(() => {
     handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1);
     handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2);
+
+    const ref1 = scrollRef1.current;
+    const ref2 = scrollRef2.current;
+
+    if (ref1) {
+      ref1.addEventListener("scroll", () =>
+        handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
+      );
+    }
+    if (ref2) {
+      ref2.addEventListener("scroll", () =>
+        handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
+      );
+    }
+
+    return () => {
+      if (ref1) {
+        ref1.removeEventListener("scroll", () =>
+          handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
+        );
+      }
+      if (ref2) {
+        ref2.removeEventListener("scroll", () =>
+          handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
+        );
+      }
+    };
   }, []);
 
-  const scrollStyle = css`
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    &::-webkit-scrollbar {
-      display: none;
-    }
-  `;
+  const renderHorizontalList = (
+    items: string[],
+    titlePrefix: string,
+    ref: React.RefObject<HTMLDivElement | null>,
+    showLeftArrow: boolean,
+    showRightArrow: boolean,
+    setShowLeftArrow: (val: boolean) => void,
+    setShowRightArrow: (val: boolean) => void
+  ) => (
+    <Flex mt={4} position="relative" align="center">
+      {showLeftArrow && (
+        <IconButton
+          aria-label="Scroll Left"
+          onClick={() => scrollHorizontally(ref, "left")}
+          position="absolute"
+          left="-16px"
+          top="50%"
+          transform="translateY(-50%)"
+          zIndex={1}
+          variant="ghost"
+          color="white"
+          fontSize="28px"
+          _hover={{ bg: "transparent" }}
+        >
+          <FiChevronLeft />
+        </IconButton>
+      )}
+
+      <Flex
+        ref={ref}
+        gap={4}
+        overflowX="auto"
+        scrollBehavior="smooth"
+        onScroll={() => handleScroll(ref, setShowLeftArrow, setShowRightArrow)}
+        align="stretch"
+        style={{
+          msOverflowStyle: "none",
+          scrollbarWidth: "none",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        {items.map((item, index) => (
+          <Box
+            key={index}
+            data-step-card
+            minW={{ base: "100%", md: "30%" }}
+            flexShrink={0}
+            bg="#445775"
+            boxShadow="md"
+            borderRadius="md"
+            p={4}
+          >
+            <Heading fontSize="lg" color="white" mb={2}>
+              {`${titlePrefix} ${index + 1}`}
+            </Heading>
+            <Text fontSize="sm" color="white">
+              {item}
+            </Text>
+          </Box>
+        ))}
+      </Flex>
+
+      {showRightArrow && (
+        <IconButton
+          aria-label="Scroll Right"
+          onClick={() => scrollHorizontally(ref, "right")}
+          position="absolute"
+          right="-16px"
+          top="50%"
+          transform="translateY(-50%)"
+          variant="ghost"
+          color="white"
+          fontSize="28px"
+          _hover={{ bg: "transparent" }}
+        >
+          <FiChevronRight />
+        </IconButton>
+      )}
+    </Flex>
+  );
 
   return (
-    <Box p={3} pl={{ base: 10, md: 4 }} position="relative">
+    <Box
+      p={3}
+      pl={{ base: 10, md: 4 }}
+      position="relative"
+      bg="#242424"
+      color="white"
+    >
+      {/* Judul Halaman */}
       <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
         Selamat Datang di Vision Medicine!
       </Heading>
@@ -104,89 +209,37 @@ const Home = () => {
         Deteksi Obat Kini Lebih Mudah
       </Text>
 
-      {/* Bagian 1: Tutorial Step by Step */}
-      <Heading
-        mt={8}
-        fontSize={{ base: "lg", md: "xl" }}
-        color="orange.400"
-        fontWeight="bold"
-      >
-        Tutorial Step by Step Vision Medicine Website
-      </Heading>
-
-      <Flex mt={4} position="relative" align="center">
-        {showLeftArrow1 && (
-          <IconButton
-            aria-label="Scroll Left"
-            onClick={() => scrollHorizontally(scrollRef1, "left")}
-            position="absolute"
-            left="-16px"
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex={1}
-            variant="ghost"
-            color="white"
-            fontSize="28px"
-            _hover={{ bg: "transparent" }}
-          >
-            <FiChevronLeft />
-          </IconButton>
-        )}
-
-        <Flex
-          ref={scrollRef1}
-          gap={4}
-          overflowX="auto"
-          css={scrollStyle}
-          scrollBehavior="smooth"
-          onScroll={() =>
-            handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
-          }
-          align="stretch"
-        >
-          {steps.map((step, index) => (
-            <Box
-              key={index}
-              data-step-card
-              minW={{ base: "100%", md: "30%" }}
-              flexShrink={0}
-              bg="#445775"
-              boxShadow="md"
-              borderRadius="md"
-              p={4}
-            >
-              <Heading fontSize="lg" color="white" mb={2}>
-                {`Step ${index + 1}`}
-              </Heading>
-              <Text fontSize="sm" color="white">
-                {step}
-              </Text>
-            </Box>
-          ))}
-        </Flex>
-
-        {showRightArrow1 && (
-          <IconButton
-            aria-label="Scroll Right"
-            onClick={() => scrollHorizontally(scrollRef1, "right")}
-            position="absolute"
-            right="-16px"
-            top="50%"
-            transform="translateY(-50%)"
-            variant="ghost"
-            color="white"
-            fontSize="28px"
-            _hover={{ bg: "transparent" }}
-          >
-            <FiChevronRight />
-          </IconButton>
-        )}
-      </Flex>
-
-      {/* Kotak Scan Your Medicine */}
+      {/* Bagian 1 */}
       <Box
         mt={8}
-        bg="white"
+        bg="rgba(255,255,255,0.09)"
+        borderRadius="md"
+        p={{ base: 4, md: 6 }}
+        boxShadow="lg"
+        color="black"
+      >
+        <Heading
+          fontSize={{ base: "lg", md: "xl" }}
+          color="orange.400"
+          fontWeight="bold"
+        >
+          Tutorial Step by Step Vision Medicine Website
+        </Heading>
+        {renderHorizontalList(
+          steps,
+          "Step",
+          scrollRef1,
+          showLeftArrow1,
+          showRightArrow1,
+          setShowLeftArrow1,
+          setShowRightArrow1
+        )}
+      </Box>
+
+      {/* Kotak Scan */}
+      <Box
+        mt={8}
+        bg="rgba(255,255,255,0.9)"
         borderRadius="md"
         p={{ base: 3, md: 5 }}
         boxShadow="lg"
@@ -203,83 +256,64 @@ const Home = () => {
         </Heading>
       </Box>
 
-      {/* Bagian 2: Our Product */}
-      <Heading
+      {/* Bagian 2 */}
+      <Box
         mt={8}
-        fontSize={{ base: "lg", md: "xl" }}
-        color="orange.400"
-        fontWeight="bold"
+        bg="rgba(255,255,255,0.09)"
+        borderRadius="md"
+        p={{ base: 4, md: 6 }}
+        boxShadow="lg"
+        color="black"
       >
-        Our Product
-      </Heading>
-
-      <Flex mt={4} position="relative" align="center">
-        {showLeftArrow2 && (
-          <IconButton
-            aria-label="Scroll Left"
-            onClick={() => scrollHorizontally(scrollRef2, "left")}
-            position="absolute"
-            left="-16px"
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex={1}
-            variant="ghost"
-            color="white"
-            fontSize="28px"
-            _hover={{ bg: "transparent" }}
-          >
-            <FiChevronLeft />
-          </IconButton>
-        )}
-
-        <Flex
-          ref={scrollRef2}
-          gap={4}
-          overflowX="auto"
-          css={scrollStyle}
-          scrollBehavior="smooth"
-          onScroll={() =>
-            handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
-          }
-          align="stretch"
+        <Heading
+          fontSize={{ base: "lg", md: "xl" }}
+          color="orange.400"
+          fontWeight="bold"
         >
-          {products.map((product, index) => (
-            <Box
-              key={index}
-              data-step-card
-              minW={{ base: "100%", md: "30%" }}
-              flexShrink={0}
-              bg="#445775"
-              boxShadow="md"
-              borderRadius="md"
-              p={4}
-            >
-              <Heading fontSize="lg" color="white" mb={2}>
-                {`Product ${index + 1}`}
-              </Heading>
-              <Text fontSize="sm" color="white">
-                {product}
-              </Text>
-            </Box>
-          ))}
-        </Flex>
-
-        {showRightArrow2 && (
-          <IconButton
-            aria-label="Scroll Right"
-            onClick={() => scrollHorizontally(scrollRef2, "right")}
-            position="absolute"
-            right="-16px"
-            top="50%"
-            transform="translateY(-50%)"
-            variant="ghost"
-            color="white"
-            fontSize="28px"
-            _hover={{ bg: "transparent" }}
-          >
-            <FiChevronRight />
-          </IconButton>
+          Our Product
+        </Heading>
+        {renderHorizontalList(
+          products,
+          "Product",
+          scrollRef2,
+          showLeftArrow2,
+          showRightArrow2,
+          setShowLeftArrow2,
+          setShowRightArrow2
         )}
+      </Box>
+
+      {/* Bagian Quote */}
+      <Flex
+        mt={12}
+        p={1}
+        bg="#242424"
+        borderRadius="md"
+        align="stretch"
+        boxShadow="lg"
+      >
+        <Box
+          w={{ base: "80px", md: "20px" }}
+          bg="#445775"
+          borderRadius="full"
+          mr={4}
+        />
+        <Box>
+          <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall">
+            "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
+            manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
+            baru bagi saudara saudara kita yang membutuhkan akses informasi obat
+            dengan cara yang lebih inklusif."
+          </Text>
+          <Text
+            mt={3}
+            fontWeight="bold"
+            fontStyle="italic"
+            transform="skewX(-20deg)"
+          >
+            ---- Member of VISMED ----
+          </Text>
+        </Box>
       </Flex>
     </Box>
   );
