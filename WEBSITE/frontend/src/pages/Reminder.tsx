@@ -175,8 +175,9 @@ const Reminder = () => {
       h="100vh"
       w="100%"
       bg="#242424"
-      p={{ base: 4, md: 6 }}
+      p={{ base: 2, md: 4 }}
     >
+      {/* Header mengikuti style FindYourVISMED */}
       <Flex
         align="center"
         justify="center"
@@ -215,7 +216,6 @@ const Reminder = () => {
               borderBottom="4px solid"
               borderColor="gray.600"
             >
-              {/* Form Input */}
               <Box w={{ base: "100%", md: "25%" }}>
                 <Select
                   options={medicineOptions}
@@ -273,7 +273,6 @@ const Reminder = () => {
                 placeholder="Menit (0-59)"
               />
 
-              {/* Toggle + Delete di bawah saat mobile */}
               <Flex
                 align="center"
                 gap={2}
@@ -336,7 +335,6 @@ const Reminder = () => {
             </Flex>
           ))}
 
-          {/* Tombol Add */}
           <Button
             onClick={handleAdd}
             bg="green.600"
