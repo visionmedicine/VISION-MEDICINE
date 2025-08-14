@@ -208,14 +208,14 @@ const Reminder = () => {
               gap={3}
               w="100%"
               align="center"
-              justify="space-between"
               flexDirection={{ base: "column", md: "row" }}
-              bg={reminder.isSet ? "#38A169" : "#2f2f2f"}
+              bg={reminder.isSet ? "#445775" : "#2f2f2f"}
               p={3}
               borderRadius="xl"
               borderBottom="4px solid"
               borderColor="gray.600"
             >
+              {/* Form Input */}
               <Box w={{ base: "100%", md: "25%" }}>
                 <Select
                   options={medicineOptions}
@@ -273,8 +273,14 @@ const Reminder = () => {
                 placeholder="Menit (0-59)"
               />
 
-              <Flex align="center" gap={2} ml="auto">
-                {/* Toggle Switch */}
+              {/* Toggle + Delete di bawah saat mobile */}
+              <Flex
+                align="center"
+                gap={2}
+                order={{ base: 2, md: 2 }}
+                w={{ base: "100%", md: "auto" }}
+                justify={{ base: "flex-start", md: "flex-end" }}
+              >
                 <label
                   style={{
                     position: "relative",
@@ -320,8 +326,6 @@ const Reminder = () => {
                 <Text color="white" fontSize="sm">
                   {reminder.isSet ? "Aktif" : "Nonaktif"}
                 </Text>
-
-                {/* Delete icon menempel ke kanan */}
                 <FiTrash2
                   color="white"
                   size={18}
@@ -332,10 +336,10 @@ const Reminder = () => {
             </Flex>
           ))}
 
-          {/* Tombol Add di bawah semua baris */}
+          {/* Tombol Add */}
           <Button
             onClick={handleAdd}
-            bg="green.400"
+            bg="green.600"
             color="white"
             borderRadius="xl"
             size="sm"
