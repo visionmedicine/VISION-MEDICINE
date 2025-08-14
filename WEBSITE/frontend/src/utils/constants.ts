@@ -3,9 +3,9 @@ import {
   Mic,
   MapPin, 
   Pill,
-  History,
+  // History,
   Clock,
-  Settings,
+  // Settings,
 } from "lucide-react";
 
 export const MENU_ITEMS = [
@@ -13,7 +13,7 @@ export const MENU_ITEMS = [
   { label: "VISMED Talks", path: "/vismed-talks", icon: Mic },
   { label: "Find Your VISMED", path: "/find-your-vismed", icon: MapPin }, 
   { label: "Medicine Information", path: "/medicine-information", icon: Pill },
-  { label: "Drug History", path: "/drug-history", icon: History },
+  // { label: "Drug History", path: "/drug-history", icon: History },
   { label: "Reminder", path: "/reminder", icon: Clock },
-  { label: "Setting", path: "/setting", icon: Settings },
+  // { label: "Setting", path: "/setting", icon: Settings },
 ];
