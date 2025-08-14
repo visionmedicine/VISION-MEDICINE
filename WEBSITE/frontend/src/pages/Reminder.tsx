@@ -8,7 +8,7 @@ import {
   Input,
   Button,
 } from "@chakra-ui/react";
-import { FiClock, FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiClock, FiPlus, FiTrash2 } from "react-icons/fi";
 import Select from "react-select";
 
 type ReminderRow = {
@@ -42,9 +42,7 @@ const customSelectStyles = {
     minHeight: "38px",
     height: "38px",
     boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none",
-    "&:hover": {
-      borderColor: "#3182CE",
-    },
+    "&:hover": { borderColor: "#3182CE" },
   }),
   singleValue: (provided: any) => ({ ...provided, color: "black" }),
   menu: (provided: any) => ({
@@ -142,13 +140,12 @@ const Reminder = () => {
     alert("Baris baru ditambahkan");
   };
 
-  const handleEdit = () =>
-    alert("Mode edit aktif, silakan ubah data langsung pada tabel");
-
-  const handleDelete = () => {
-    if (reminders.length > 0) {
-      setReminders((prev) => prev.slice(0, -1));
-      alert("Baris terakhir dihapus");
+  const handleDeleteRow = (index: number) => {
+    const r = reminders[index];
+    if (
+      window.confirm(`Apakah yakin ingin menghapus reminder: ${r.medicine}?`)
+    ) {
+      setReminders((prev) => prev.filter((_, idx) => idx !== index));
     }
   };
 
@@ -202,39 +199,6 @@ const Reminder = () => {
           </Text>
         </HStack>
       </Flex>
-
-      <HStack gap={2} justify="flex-start" mt={3} mb={2} flexWrap="wrap">
-        <Button
-          onClick={handleAdd}
-          bg="green.400"
-          color="white"
-          borderRadius="xl"
-          size="sm"
-          _hover={{ bg: "green.500" }}
-        >
-          <FiPlus style={{ marginRight: 6 }} /> Add
-        </Button>
-        <Button
-          onClick={handleEdit}
-          bg="blue.400"
-          color="white"
-          borderRadius="xl"
-          size="sm"
-          _hover={{ bg: "blue.500" }}
-        >
-          <FiEdit style={{ marginRight: 6 }} /> Edit
-        </Button>
-        <Button
-          onClick={handleDelete}
-          bg="red.400"
-          color="white"
-          borderRadius="xl"
-          size="sm"
-          _hover={{ bg: "red.500" }}
-        >
-          <FiTrash2 style={{ marginRight: 6 }} /> Delete
-        </Button>
-      </HStack>
 
       <Box flex="1" overflowY="auto" p={{ base: 3, md: 4 }}>
         <VStack gap={3} align="stretch">
@@ -291,7 +255,7 @@ const Reminder = () => {
                 borderRadius="12px"
                 fontSize="sm"
                 borderColor="gray.200"
-                w={{ base: "100%", md: "15%" }}
+                w={{ base: "100%", md: "18%" }}
                 placeholder="Jam (0-23)"
               />
 
@@ -305,12 +269,12 @@ const Reminder = () => {
                 borderRadius="12px"
                 fontSize="sm"
                 borderColor="gray.200"
-                w={{ base: "100%", md: "15%" }}
+                w={{ base: "100%", md: "18%" }}
                 placeholder="Menit (0-59)"
               />
 
-              {/* Animated toggle switch */}
-              <Flex align="center" gap={2} w={{ base: "100%", md: "15%" }}>
+              <Flex align="center" gap={2} ml="auto">
+                {/* Toggle Switch */}
                 <label
                   style={{
                     position: "relative",
@@ -356,9 +320,30 @@ const Reminder = () => {
                 <Text color="white" fontSize="sm">
                   {reminder.isSet ? "Aktif" : "Nonaktif"}
                 </Text>
+
+                {/* Delete icon menempel ke kanan */}
+                <FiTrash2
+                  color="white"
+                  size={18}
+                  style={{ cursor: "pointer", marginLeft: 8 }}
+                  onClick={() => handleDeleteRow(idx)}
+                />
               </Flex>
             </Flex>
           ))}
+
+          {/* Tombol Add di bawah semua baris */}
+          <Button
+            onClick={handleAdd}
+            bg="green.400"
+            color="white"
+            borderRadius="xl"
+            size="sm"
+            w={{ base: "100%", md: "fit-content" }}
+            _hover={{ bg: "green.500" }}
+          >
+            <FiPlus style={{ marginRight: 6 }} /> Add
+          </Button>
         </VStack>
       </Box>
     </Flex>
