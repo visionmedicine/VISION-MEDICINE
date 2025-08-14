@@ -159,6 +159,26 @@ const Home = () => {
           </IconButton>
         )}
       </Flex>
+
+      {/* Kotak Scan Your Medicine */}
+      <Box
+        mt={8}
+        bg="white"
+        borderRadius="md"
+        p={{ base: 3, md: 5 }} // padding responsive
+        boxShadow="lg"
+        textAlign="center"
+        cursor="pointer"
+        color="black"
+        _hover={{
+          bg: "orange.500",
+          color: "white",
+        }}
+      >
+        <Heading fontSize={{ base: "lg", md: "2xl" }}>
+          ===== Scan Your Medicine =====
+        </Heading>
+      </Box>
     </Box>
   );
 };
