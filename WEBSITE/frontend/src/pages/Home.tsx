@@ -25,46 +25,66 @@ const Home = () => {
     "Selesai & Gunakan Informasi",
   ];
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(true);
+  const products = [
+    "Vision Medicine Website",
+    "Mobile App Vision Medicine",
+    "Fitur Deteksi Obat via Kamera",
+    "Database Informasi Obat Terbaru",
+    "Fitur Pemindaian Barcode",
+    "Rekomendasi Obat Alternatif",
+    "Laporan Kesehatan Digital",
+    "Integrasi dengan Apotek Mitra",
+    "Mode Offline Deteksi Obat",
+    "Sistem Notifikasi & Pengingat",
+  ];
+
+  const scrollRef1 = useRef<HTMLDivElement | null>(null);
+  const scrollRef2 = useRef<HTMLDivElement | null>(null);
+
+  const [showLeftArrow1, setShowLeftArrow1] = useState(false);
+  const [showRightArrow1, setShowRightArrow1] = useState(true);
+  const [showLeftArrow2, setShowLeftArrow2] = useState(false);
+  const [showRightArrow2, setShowRightArrow2] = useState(true);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
 
-  const handleScrollRight = () => {
-    if (!scrollRef.current) return;
-    const firstCard = scrollRef.current.querySelector(
-      "div[data-step-card]"
-    ) as HTMLElement;
-    const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
-    scrollRef.current.scrollBy({
-      left: isMobile ? cardWidth : 300,
-      behavior: "smooth",
-    });
-  };
-
-  const handleScrollLeft = () => {
-    if (!scrollRef.current) return;
-    const firstCard = scrollRef.current.querySelector(
-      "div[data-step-card]"
-    ) as HTMLElement;
-    const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
-    scrollRef.current.scrollBy({
-      left: isMobile ? -cardWidth : -300,
-      behavior: "smooth",
-    });
-  };
-
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setShowLeftArrow(scrollLeft > 0);
-      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 1);
+  const handleScroll = (
+    ref: React.RefObject<HTMLDivElement | null>,
+    setLeft: (val: boolean) => void,
+    setRight: (val: boolean) => void
+  ) => {
+    if (ref.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = ref.current;
+      setLeft(scrollLeft > 0);
+      setRight(scrollLeft + clientWidth < scrollWidth - 1);
     }
   };
 
+  const scrollHorizontally = (
+    ref: React.RefObject<HTMLDivElement | null>,
+    direction: "left" | "right"
+  ) => {
+    if (!ref.current) return;
+    const firstCard = ref.current.querySelector(
+      "div[data-step-card]"
+    ) as HTMLElement;
+    const cardWidth = firstCard ? firstCard.offsetWidth + 16 : 300;
+    ref.current.scrollBy({
+      left:
+        direction === "right"
+          ? isMobile
+            ? cardWidth
+            : 300
+          : isMobile
+          ? -cardWidth
+          : -300,
+      behavior: "smooth",
+    });
+  };
+
   useEffect(() => {
-    handleScroll();
+    handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1);
+    handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2);
   }, []);
 
   const scrollStyle = css`
@@ -84,6 +104,7 @@ const Home = () => {
         Deteksi Obat Kini Lebih Mudah
       </Text>
 
+      {/* Bagian 1: Tutorial Step by Step */}
       <Heading
         mt={8}
         fontSize={{ base: "lg", md: "xl" }}
@@ -94,10 +115,10 @@ const Home = () => {
       </Heading>
 
       <Flex mt={4} position="relative" align="center">
-        {showLeftArrow && (
+        {showLeftArrow1 && (
           <IconButton
             aria-label="Scroll Left"
-            onClick={handleScrollLeft}
+            onClick={() => scrollHorizontally(scrollRef1, "left")}
             position="absolute"
             left="-16px"
             top="50%"
@@ -113,12 +134,14 @@ const Home = () => {
         )}
 
         <Flex
-          ref={scrollRef}
+          ref={scrollRef1}
           gap={4}
           overflowX="auto"
           css={scrollStyle}
           scrollBehavior="smooth"
-          onScroll={handleScroll}
+          onScroll={() =>
+            handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
+          }
           align="stretch"
         >
           {steps.map((step, index) => (
@@ -142,10 +165,10 @@ const Home = () => {
           ))}
         </Flex>
 
-        {showRightArrow && (
+        {showRightArrow1 && (
           <IconButton
             aria-label="Scroll Right"
-            onClick={handleScrollRight}
+            onClick={() => scrollHorizontally(scrollRef1, "right")}
             position="absolute"
             right="-16px"
             top="50%"
@@ -165,7 +188,7 @@ const Home = () => {
         mt={8}
         bg="white"
         borderRadius="md"
-        p={{ base: 3, md: 5 }} // padding responsive
+        p={{ base: 3, md: 5 }}
         boxShadow="lg"
         textAlign="center"
         cursor="pointer"
@@ -179,6 +202,85 @@ const Home = () => {
           ===== Scan Your Medicine =====
         </Heading>
       </Box>
+
+      {/* Bagian 2: Our Product */}
+      <Heading
+        mt={8}
+        fontSize={{ base: "lg", md: "xl" }}
+        color="orange.400"
+        fontWeight="bold"
+      >
+        Our Product
+      </Heading>
+
+      <Flex mt={4} position="relative" align="center">
+        {showLeftArrow2 && (
+          <IconButton
+            aria-label="Scroll Left"
+            onClick={() => scrollHorizontally(scrollRef2, "left")}
+            position="absolute"
+            left="-16px"
+            top="50%"
+            transform="translateY(-50%)"
+            zIndex={1}
+            variant="ghost"
+            color="white"
+            fontSize="28px"
+            _hover={{ bg: "transparent" }}
+          >
+            <FiChevronLeft />
+          </IconButton>
+        )}
+
+        <Flex
+          ref={scrollRef2}
+          gap={4}
+          overflowX="auto"
+          css={scrollStyle}
+          scrollBehavior="smooth"
+          onScroll={() =>
+            handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
+          }
+          align="stretch"
+        >
+          {products.map((product, index) => (
+            <Box
+              key={index}
+              data-step-card
+              minW={{ base: "100%", md: "30%" }}
+              flexShrink={0}
+              bg="#445775"
+              boxShadow="md"
+              borderRadius="md"
+              p={4}
+            >
+              <Heading fontSize="lg" color="white" mb={2}>
+                {`Product ${index + 1}`}
+              </Heading>
+              <Text fontSize="sm" color="white">
+                {product}
+              </Text>
+            </Box>
+          ))}
+        </Flex>
+
+        {showRightArrow2 && (
+          <IconButton
+            aria-label="Scroll Right"
+            onClick={() => scrollHorizontally(scrollRef2, "right")}
+            position="absolute"
+            right="-16px"
+            top="50%"
+            transform="translateY(-50%)"
+            variant="ghost"
+            color="white"
+            fontSize="28px"
+            _hover={{ bg: "transparent" }}
+          >
+            <FiChevronRight />
+          </IconButton>
+        )}
+      </Flex>
     </Box>
   );
 };
