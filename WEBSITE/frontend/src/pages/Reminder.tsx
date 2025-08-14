@@ -16,6 +16,7 @@ type ReminderRow = {
   date: string;
   hour: string; // Jam 0-23
   minute: string; // Menit 0-59
+  isSet?: boolean; // menandai jika reminder aktif
 };
 
 const medicines = [
@@ -31,17 +32,16 @@ const medicines = [
 
 const medicineOptions = medicines.map((m) => ({ value: m, label: m }));
 
-// Custom styles untuk react-select agar teks hitam dan kotak seragam
 const customSelectStyles = {
   control: (provided: any, state: any) => ({
     ...provided,
     backgroundColor: "white",
     color: "black",
-    borderRadius: "12px", // sesuaikan borderRadius Chakra
-    borderColor: "#E2E8F0", // border warna sama seperti Input Chakra
-    minHeight: "38px", // sesuaikan tinggi
+    borderRadius: "12px",
+    borderColor: "#E2E8F0",
+    minHeight: "38px",
     height: "38px",
-    boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none", // fokus seperti Chakra
+    boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none",
     "&:hover": {
       borderColor: "#3182CE",
     },
@@ -98,7 +98,7 @@ const formatDateWithMonthName = (value: string) => {
 
 const Reminder = () => {
   const [reminders, setReminders] = useState<ReminderRow[]>([
-    { medicine: "", date: "", hour: "", minute: "" },
+    { medicine: "", date: "", hour: "", minute: "", isSet: false },
   ]);
 
   const handleChange = (
@@ -108,12 +108,14 @@ const Reminder = () => {
   ) => {
     setReminders((prev) =>
       prev.map((item, idx) =>
-        idx === index ? ({ ...item, [field]: value } as ReminderRow) : item
+        idx === index
+          ? ({ ...item, [field]: value, isSet: false } as ReminderRow)
+          : item
       )
     );
   };
 
-  const handleSet = (index: number) => {
+  const handleToggleSet = (index: number) => {
     const r = reminders[index];
 
     if (!r.medicine || !r.date || !r.hour || !r.minute) {
@@ -121,17 +123,37 @@ const Reminder = () => {
       return;
     }
 
-    alert(
-      `✅ Reminder diset: ${r.medicine}, Tanggal ${formatDateWithMonthName(
-        r.date
-      )}, Jam ${r.hour.padStart(2, "0")}:${r.minute.padStart(2, "0")}`
+    setReminders((prev) =>
+      prev.map((item, idx) =>
+        idx === index ? { ...item, isSet: !item.isSet } : item
+      )
     );
+
+    if (!r.isSet) {
+      alert(
+        `✅ Reminder diaktifkan: ${
+          r.medicine
+        }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
+          2,
+          "0"
+        )}:${r.minute.padStart(2, "0")}`
+      );
+    } else {
+      alert(
+        `⚠️ Reminder dinonaktifkan: ${
+          r.medicine
+        }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
+          2,
+          "0"
+        )}:${r.minute.padStart(2, "0")}`
+      );
+    }
   };
 
   const handleAdd = () => {
     setReminders((prev) => [
       ...prev,
-      { medicine: "", date: "", hour: "", minute: "" },
+      { medicine: "", date: "", hour: "", minute: "", isSet: false },
     ]);
     alert("Baris baru ditambahkan");
   };
@@ -172,6 +194,9 @@ const Reminder = () => {
   };
 
   const handleDateChange = (index: number, value: string) => {
+    // Validasi tahun maksimal 4 digit
+    const [year] = value.split("-");
+    if (year.length > 4) return;
     handleChange(index, "date", value);
   };
 
@@ -252,13 +277,12 @@ const Reminder = () => {
               align="center"
               justify="space-between"
               flexDirection={{ base: "column", md: "row" }}
-              bg="#2f2f2f"
+              bg={reminder.isSet ? "#38A169" : "#2f2f2f"}
               p={3}
               borderRadius="xl"
               borderBottom="4px solid"
               borderColor="gray.600"
             >
-              {/* Obat dengan Search */}
               <Box w={{ base: "100%", md: "25%" }}>
                 <Select
                   options={medicineOptions}
@@ -276,7 +300,6 @@ const Reminder = () => {
                 />
               </Box>
 
-              {/* Tanggal */}
               <Input
                 type="date"
                 value={reminder.date}
@@ -289,7 +312,6 @@ const Reminder = () => {
                 w={{ base: "100%", md: "20%" }}
               />
 
-              {/* Jam */}
               <Input
                 type="text"
                 inputMode="numeric"
@@ -304,7 +326,6 @@ const Reminder = () => {
                 placeholder="Jam (0-23)"
               />
 
-              {/* Menit */}
               <Input
                 type="text"
                 inputMode="numeric"
@@ -319,18 +340,17 @@ const Reminder = () => {
                 placeholder="Menit (0-59)"
               />
 
-              {/* Tombol Set */}
               <Button
-                onClick={() => handleSet(idx)}
-                bg="#FFAE00"
+                onClick={() => handleToggleSet(idx)}
+                bg={reminder.isSet ? "#DD6B20" : "#FFAE00"}
                 color="black"
                 borderRadius="12px"
                 fontWeight="bold"
                 fontSize="sm"
-                _hover={{ bg: "#e59c00" }}
+                _hover={{ bg: reminder.isSet ? "#c05621" : "#e59c00" }}
                 w={{ base: "100%", md: "15%" }}
               >
-                Set
+                {reminder.isSet ? "Nonaktifkan" : "Set"}
               </Button>
             </Flex>
           ))}
