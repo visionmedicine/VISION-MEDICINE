@@ -14,9 +14,9 @@ import Select from "react-select";
 type ReminderRow = {
   medicine: string;
   date: string;
-  hour: string; // Jam 0-23
-  minute: string; // Menit 0-59
-  isSet?: boolean; // menandai jika reminder aktif
+  hour: string;
+  minute: string;
+  isSet?: boolean;
 };
 
 const medicines = [
@@ -46,10 +46,7 @@ const customSelectStyles = {
       borderColor: "#3182CE",
     },
   }),
-  singleValue: (provided: any) => ({
-    ...provided,
-    color: "black",
-  }),
+  singleValue: (provided: any) => ({ ...provided, color: "black" }),
   menu: (provided: any) => ({
     ...provided,
     backgroundColor: "white",
@@ -61,18 +58,10 @@ const customSelectStyles = {
     ...provided,
     backgroundColor: state.isSelected ? "#FFAE00" : "white",
     color: "black",
-    "&:hover": {
-      backgroundColor: "#ffe0a3",
-    },
+    "&:hover": { backgroundColor: "#ffe0a3" },
   }),
-  placeholder: (provided: any) => ({
-    ...provided,
-    color: "gray",
-  }),
-  input: (provided: any) => ({
-    ...provided,
-    color: "black",
-  }),
+  placeholder: (provided: any) => ({ ...provided, color: "gray" }),
+  input: (provided: any) => ({ ...provided, color: "black" }),
 };
 
 const formatDateWithMonthName = (value: string) => {
@@ -117,37 +106,32 @@ const Reminder = () => {
 
   const handleToggleSet = (index: number) => {
     const r = reminders[index];
-
     if (!r.medicine || !r.date || !r.hour || !r.minute) {
       alert("⚠️ Harap isi semua data sebelum menyimpan reminder!");
       return;
     }
-
+    const newValue = !r.isSet;
     setReminders((prev) =>
       prev.map((item, idx) =>
-        idx === index ? { ...item, isSet: !item.isSet } : item
+        idx === index ? { ...item, isSet: newValue } : item
       )
     );
 
-    if (!r.isSet) {
-      alert(
-        `✅ Reminder diaktifkan: ${
-          r.medicine
-        }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
-          2,
-          "0"
-        )}:${r.minute.padStart(2, "0")}`
-      );
-    } else {
-      alert(
-        `⚠️ Reminder dinonaktifkan: ${
-          r.medicine
-        }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
-          2,
-          "0"
-        )}:${r.minute.padStart(2, "0")}`
-      );
-    }
+    alert(
+      newValue
+        ? `✅ Reminder diaktifkan: ${
+            r.medicine
+          }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
+            2,
+            "0"
+          )}:${r.minute.padStart(2, "0")}`
+        : `⚠️ Reminder dinonaktifkan: ${
+            r.medicine
+          }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
+            2,
+            "0"
+          )}:${r.minute.padStart(2, "0")}`
+    );
   };
 
   const handleAdd = () => {
@@ -158,9 +142,8 @@ const Reminder = () => {
     alert("Baris baru ditambahkan");
   };
 
-  const handleEdit = () => {
+  const handleEdit = () =>
     alert("Mode edit aktif, silakan ubah data langsung pada tabel");
-  };
 
   const handleDelete = () => {
     if (reminders.length > 0) {
@@ -171,30 +154,19 @@ const Reminder = () => {
 
   const handleHourChange = (index: number, value: string) => {
     const onlyNumbers = value.replace(/[^0-9]/g, "");
-    if (onlyNumbers === "") {
-      handleChange(index, "hour", "");
-      return;
-    }
+    if (onlyNumbers === "") return handleChange(index, "hour", "");
     const num = parseInt(onlyNumbers, 10);
-    if (num >= 0 && num <= 23) {
-      handleChange(index, "hour", onlyNumbers);
-    }
+    if (num >= 0 && num <= 23) handleChange(index, "hour", onlyNumbers);
   };
 
   const handleMinuteChange = (index: number, value: string) => {
     const onlyNumbers = value.replace(/[^0-9]/g, "");
-    if (onlyNumbers === "") {
-      handleChange(index, "minute", "");
-      return;
-    }
+    if (onlyNumbers === "") return handleChange(index, "minute", "");
     const num = parseInt(onlyNumbers, 10);
-    if (num >= 0 && num <= 59) {
-      handleChange(index, "minute", onlyNumbers);
-    }
+    if (num >= 0 && num <= 59) handleChange(index, "minute", onlyNumbers);
   };
 
   const handleDateChange = (index: number, value: string) => {
-    // Validasi tahun maksimal 4 digit
     const [year] = value.split("-");
     if (year.length > 4) return;
     handleChange(index, "date", value);
@@ -206,9 +178,8 @@ const Reminder = () => {
       h="100vh"
       w="100%"
       bg="#242424"
-      p={{ base: 2, md: 4 }}
+      p={{ base: 4, md: 6 }}
     >
-      {/* Header */}
       <Flex
         align="center"
         justify="center"
@@ -232,7 +203,6 @@ const Reminder = () => {
         </HStack>
       </Flex>
 
-      {/* Action Buttons */}
       <HStack gap={2} justify="flex-start" mt={3} mb={2} flexWrap="wrap">
         <Button
           onClick={handleAdd}
@@ -266,7 +236,6 @@ const Reminder = () => {
         </Button>
       </HStack>
 
-      {/* Reminder List */}
       <Box flex="1" overflowY="auto" p={{ base: 3, md: 4 }}>
         <VStack gap={3} align="stretch">
           {reminders.map((reminder, idx) => (
@@ -340,18 +309,54 @@ const Reminder = () => {
                 placeholder="Menit (0-59)"
               />
 
-              <Button
-                onClick={() => handleToggleSet(idx)}
-                bg={reminder.isSet ? "#DD6B20" : "#FFAE00"}
-                color="black"
-                borderRadius="12px"
-                fontWeight="bold"
-                fontSize="sm"
-                _hover={{ bg: reminder.isSet ? "#c05621" : "#e59c00" }}
-                w={{ base: "100%", md: "15%" }}
-              >
-                {reminder.isSet ? "Nonaktifkan" : "Set"}
-              </Button>
+              {/* Animated toggle switch */}
+              <Flex align="center" gap={2} w={{ base: "100%", md: "15%" }}>
+                <label
+                  style={{
+                    position: "relative",
+                    display: "inline-block",
+                    width: 50,
+                    height: 26,
+                    margin: 0,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={reminder.isSet}
+                    onChange={() => handleToggleSet(idx)}
+                    style={{ opacity: 0, width: 0, height: 0 }}
+                  />
+                  <span
+                    style={{
+                      position: "absolute",
+                      cursor: "pointer",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: reminder.isSet ? "#FFAE00" : "#ccc",
+                      borderRadius: 34,
+                      transition: ".4s",
+                    }}
+                  ></span>
+                  <span
+                    style={{
+                      position: "absolute",
+                      content: '""',
+                      height: 22,
+                      width: 22,
+                      left: reminder.isSet ? 26 : 2,
+                      bottom: 2,
+                      backgroundColor: "white",
+                      borderRadius: "50%",
+                      transition: ".4s",
+                    }}
+                  ></span>
+                </label>
+                <Text color="white" fontSize="sm">
+                  {reminder.isSet ? "Aktif" : "Nonaktif"}
+                </Text>
+              </Flex>
             </Flex>
           ))}
         </VStack>
