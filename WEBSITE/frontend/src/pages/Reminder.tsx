@@ -7,11 +7,9 @@ import {
   HStack,
   Input,
   Button,
-  chakra,
 } from "@chakra-ui/react";
 import { FiClock, FiPlus, FiEdit, FiTrash2 } from "react-icons/fi";
-
-const NativeSelect = chakra("select");
+import Select from "react-select";
 
 type ReminderRow = {
   medicine: string;
@@ -25,9 +23,58 @@ const medicines = [
   "Amoxicillin",
   "Ibuprofen",
   "Vitamin C",
+  "Cefixime",
+  "Metformin",
+  "Simvastatin",
+  "Omeprazole",
 ] as const;
 
-// Fungsi format tanggal ke DD <Bulan> YYYY
+const medicineOptions = medicines.map((m) => ({ value: m, label: m }));
+
+// Custom styles untuk react-select agar teks hitam dan kotak seragam
+const customSelectStyles = {
+  control: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: "white",
+    color: "black",
+    borderRadius: "12px", // sesuaikan borderRadius Chakra
+    borderColor: "#E2E8F0", // border warna sama seperti Input Chakra
+    minHeight: "38px", // sesuaikan tinggi
+    height: "38px",
+    boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none", // fokus seperti Chakra
+    "&:hover": {
+      borderColor: "#3182CE",
+    },
+  }),
+  singleValue: (provided: any) => ({
+    ...provided,
+    color: "black",
+  }),
+  menu: (provided: any) => ({
+    ...provided,
+    backgroundColor: "white",
+    color: "black",
+    borderRadius: "12px",
+    overflow: "hidden",
+  }),
+  option: (provided: any, state: any) => ({
+    ...provided,
+    backgroundColor: state.isSelected ? "#FFAE00" : "white",
+    color: "black",
+    "&:hover": {
+      backgroundColor: "#ffe0a3",
+    },
+  }),
+  placeholder: (provided: any) => ({
+    ...provided,
+    color: "gray",
+  }),
+  input: (provided: any) => ({
+    ...provided,
+    color: "black",
+  }),
+};
+
 const formatDateWithMonthName = (value: string) => {
   if (!value) return "";
   const monthNames = [
@@ -211,29 +258,23 @@ const Reminder = () => {
               borderBottom="4px solid"
               borderColor="gray.600"
             >
-              {/* Obat */}
-              <NativeSelect
-                value={reminder.medicine}
-                onChange={(e) => handleChange(idx, "medicine", e.target.value)}
-                bg="white"
-                color="black"
-                borderRadius="xl"
-                fontSize="sm"
-                px={3}
-                py={2}
-                borderWidth="1px"
-                borderColor="gray.200"
-                w={{ base: "100%", md: "25%" }}
-              >
-                <option value="" disabled>
-                  Pilih Obat
-                </option>
-                {medicines.map((m) => (
-                  <option key={m} value={m}>
-                    {m}
-                  </option>
-                ))}
-              </NativeSelect>
+              {/* Obat dengan Search */}
+              <Box w={{ base: "100%", md: "25%" }}>
+                <Select
+                  options={medicineOptions}
+                  value={
+                    reminder.medicine
+                      ? { value: reminder.medicine, label: reminder.medicine }
+                      : null
+                  }
+                  onChange={(selected) =>
+                    handleChange(idx, "medicine", selected?.value || "")
+                  }
+                  placeholder="Pilih Obat"
+                  isClearable
+                  styles={customSelectStyles}
+                />
+              </Box>
 
               {/* Tanggal */}
               <Input
@@ -242,7 +283,7 @@ const Reminder = () => {
                 onChange={(e) => handleDateChange(idx, e.target.value)}
                 bg="white"
                 color="black"
-                borderRadius="xl"
+                borderRadius="12px"
                 fontSize="sm"
                 borderColor="gray.200"
                 w={{ base: "100%", md: "20%" }}
@@ -256,7 +297,7 @@ const Reminder = () => {
                 onChange={(e) => handleHourChange(idx, e.target.value)}
                 bg="white"
                 color="black"
-                borderRadius="xl"
+                borderRadius="12px"
                 fontSize="sm"
                 borderColor="gray.200"
                 w={{ base: "100%", md: "15%" }}
@@ -271,7 +312,7 @@ const Reminder = () => {
                 onChange={(e) => handleMinuteChange(idx, e.target.value)}
                 bg="white"
                 color="black"
-                borderRadius="xl"
+                borderRadius="12px"
                 fontSize="sm"
                 borderColor="gray.200"
                 w={{ base: "100%", md: "15%" }}
@@ -283,7 +324,7 @@ const Reminder = () => {
                 onClick={() => handleSet(idx)}
                 bg="#FFAE00"
                 color="black"
-                borderRadius="xl"
+                borderRadius="12px"
                 fontWeight="bold"
                 fontSize="sm"
                 _hover={{ bg: "#e59c00" }}
