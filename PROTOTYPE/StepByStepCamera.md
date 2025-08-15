@@ -6,7 +6,8 @@
 - pip install ultralytics[export]
 - reboot
 - yolo export model=obat.pt format=ncnn
-===============================================
+- pip install -r requirements.txt
+- ===============================================
 - pip install portalocker
 - pip install --no-cache-dir --upgrade pip setuptools wheel
 - pip install picamera2 --no-deps
