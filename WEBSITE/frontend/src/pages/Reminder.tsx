@@ -137,7 +137,7 @@ const Reminder = () => {
       ...prev,
       { medicine: "", date: "", hour: "", minute: "", isSet: false },
     ]);
-    alert("Baris baru ditambahkan");
+    // alert removed
   };
 
   const handleDeleteRow = (index: number) => {
