@@ -1,3 +1,4 @@
+// src/pages/Home.tsx
 import {
   Box,
   Heading,
@@ -8,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
+import PageTransition from "@/components/layouts/PageTransition";
 
 const Home = () => {
   const steps = [
@@ -87,28 +89,17 @@ const Home = () => {
     const ref1 = scrollRef1.current;
     const ref2 = scrollRef2.current;
 
-    if (ref1) {
-      ref1.addEventListener("scroll", () =>
-        handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
-      );
-    }
-    if (ref2) {
-      ref2.addEventListener("scroll", () =>
-        handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
-      );
-    }
+    const listener1 = () =>
+      handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1);
+    const listener2 = () =>
+      handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2);
+
+    if (ref1) ref1.addEventListener("scroll", listener1);
+    if (ref2) ref2.addEventListener("scroll", listener2);
 
     return () => {
-      if (ref1) {
-        ref1.removeEventListener("scroll", () =>
-          handleScroll(scrollRef1, setShowLeftArrow1, setShowRightArrow1)
-        );
-      }
-      if (ref2) {
-        ref2.removeEventListener("scroll", () =>
-          handleScroll(scrollRef2, setShowLeftArrow2, setShowRightArrow2)
-        );
-      }
+      if (ref1) ref1.removeEventListener("scroll", listener1);
+      if (ref2) ref2.removeEventListener("scroll", listener2);
     };
   }, []);
 
@@ -194,128 +185,130 @@ const Home = () => {
   );
 
   return (
-    <Box
-      p={3}
-      pl={{ base: 10, md: 4 }}
-      position="relative"
-      bg="#242424"
-      color="white"
-    >
-      {/* Judul Halaman */}
-      <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
-        Selamat Datang di Vision Medicine!
-      </Heading>
-      <Text fontSize={{ base: "lg", md: "xl" }} mt={2}>
-        Deteksi Obat Kini Lebih Mudah
-      </Text>
-
-      {/* Bagian 1 */}
+    <PageTransition>
       <Box
-        mt={8}
-        bg="rgba(255,255,255,0.09)"
-        borderRadius="md"
-        p={{ base: 4, md: 6 }}
-        boxShadow="lg"
-        color="black"
-      >
-        <Heading
-          fontSize={{ base: "lg", md: "xl" }}
-          color="orange.400"
-          fontWeight="bold"
-        >
-          Tutorial Step by Step Vision Medicine Website
-        </Heading>
-        {renderHorizontalList(
-          steps,
-          "Step",
-          scrollRef1,
-          showLeftArrow1,
-          showRightArrow1,
-          setShowLeftArrow1,
-          setShowRightArrow1
-        )}
-      </Box>
-
-      {/* Kotak Scan */}
-      <Box
-        mt={8}
-        bg="rgba(255,255,255,0.9)"
-        borderRadius="md"
-        p={{ base: 3, md: 5 }}
-        boxShadow="lg"
-        textAlign="center"
-        cursor="pointer"
-        color="black"
-        _hover={{
-          bg: "orange.500",
-          color: "white",
-        }}
-      >
-        <Heading fontSize={{ base: "lg", md: "2xl" }}>
-          ===== Scan Your Medicine =====
-        </Heading>
-      </Box>
-
-      {/* Bagian 2 */}
-      <Box
-        mt={8}
-        bg="rgba(255,255,255,0.09)"
-        borderRadius="md"
-        p={{ base: 4, md: 6 }}
-        boxShadow="lg"
-        color="black"
-      >
-        <Heading
-          fontSize={{ base: "lg", md: "xl" }}
-          color="orange.400"
-          fontWeight="bold"
-        >
-          Our Product
-        </Heading>
-        {renderHorizontalList(
-          products,
-          "Product",
-          scrollRef2,
-          showLeftArrow2,
-          showRightArrow2,
-          setShowLeftArrow2,
-          setShowRightArrow2
-        )}
-      </Box>
-
-      {/* Bagian Quote */}
-      <Flex
-        mt={12}
-        p={1}
+        p={3}
+        pl={{ base: 10, md: 4 }}
+        position="relative"
         bg="#242424"
-        borderRadius="md"
-        align="stretch"
-        boxShadow="lg"
+        color="white"
       >
+        {/* Judul Halaman */}
+        <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
+          Selamat Datang di Vision Medicine!
+        </Heading>
+        <Text fontSize={{ base: "lg", md: "xl" }} mt={2}>
+          Deteksi Obat Kini Lebih Mudah
+        </Text>
+
+        {/* Bagian 1 */}
         <Box
-          w={{ base: "80px", md: "20px" }}
-          bg="#445775"
-          borderRadius="full"
-          mr={4}
-        />
-        <Box>
-          <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall">
-            "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
-            manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
-            baru bagi saudara saudara kita yang membutuhkan akses informasi obat
-            dengan cara yang lebih inklusif."
-          </Text>
-          <Text
-            mt={3}
+          mt={8}
+          bg="rgba(255,255,255,0.09)"
+          borderRadius="md"
+          p={{ base: 4, md: 6 }}
+          boxShadow="lg"
+          color="black"
+        >
+          <Heading
+            fontSize={{ base: "lg", md: "xl" }}
+            color="orange.400"
             fontWeight="bold"
-            fontStyle="italic"
-            transform="skewX(-20deg)"
           >
-            ---- Member of VISMED ----
-          </Text>
+            Tutorial Step by Step Vision Medicine Website
+          </Heading>
+          {renderHorizontalList(
+            steps,
+            "Step",
+            scrollRef1,
+            showLeftArrow1,
+            showRightArrow1,
+            setShowLeftArrow1,
+            setShowRightArrow1
+          )}
         </Box>
-      </Flex>
-    </Box>
+
+        {/* Kotak Scan */}
+        <Box
+          mt={8}
+          bg="rgba(255,255,255,0.9)"
+          borderRadius="md"
+          p={{ base: 3, md: 5 }}
+          boxShadow="lg"
+          textAlign="center"
+          cursor="pointer"
+          color="black"
+          _hover={{
+            bg: "orange.500",
+            color: "white",
+          }}
+        >
+          <Heading fontSize={{ base: "lg", md: "2xl" }}>
+            ===== Scan Your Medicine =====
+          </Heading>
+        </Box>
+
+        {/* Bagian 2 */}
+        <Box
+          mt={8}
+          bg="rgba(255,255,255,0.09)"
+          borderRadius="md"
+          p={{ base: 4, md: 6 }}
+          boxShadow="lg"
+          color="black"
+        >
+          <Heading
+            fontSize={{ base: "lg", md: "xl" }}
+            color="orange.400"
+            fontWeight="bold"
+          >
+            Our Product
+          </Heading>
+          {renderHorizontalList(
+            products,
+            "Product",
+            scrollRef2,
+            showLeftArrow2,
+            showRightArrow2,
+            setShowLeftArrow2,
+            setShowRightArrow2
+          )}
+        </Box>
+
+        {/* Bagian Quote */}
+        <Flex
+          mt={12}
+          p={1}
+          bg="#242424"
+          borderRadius="md"
+          align="stretch"
+          boxShadow="lg"
+        >
+          <Box
+            w={{ base: "80px", md: "20px" }}
+            bg="#445775"
+            borderRadius="full"
+            mr={4}
+          />
+          <Box>
+            <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall">
+              "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
+              manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
+              baru bagi saudara saudara kita yang membutuhkan akses informasi
+              obat dengan cara yang lebih inklusif."
+            </Text>
+            <Text
+              mt={3}
+              fontWeight="bold"
+              fontStyle="italic"
+              transform="skewX(-20deg)"
+            >
+              ---- Member of VISMED ----
+            </Text>
+          </Box>
+        </Flex>
+      </Box>
+    </PageTransition>
   );
 };
 

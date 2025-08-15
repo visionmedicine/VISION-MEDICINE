@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import { FiClock, FiPlus, FiTrash2 } from "react-icons/fi";
 import Select from "react-select";
+import PageTransition from "@/components/layouts/PageTransition"; // <- added
 
 type ReminderRow = {
   medicine: string;
@@ -88,6 +89,15 @@ const Reminder = () => {
     { medicine: "", date: "", hour: "", minute: "", isSet: false },
   ]);
 
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Scroll to top smoothly on mount
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, []);
+
   const handleChange = (
     index: number,
     field: keyof ReminderRow,
@@ -137,7 +147,6 @@ const Reminder = () => {
       ...prev,
       { medicine: "", date: "", hour: "", minute: "", isSet: false },
     ]);
-    // alert removed
   };
 
   const handleDeleteRow = (index: number) => {
@@ -170,186 +179,193 @@ const Reminder = () => {
   };
 
   return (
-    <Flex
-      direction="column"
-      h="100vh"
-      w="100%"
-      bg="#242424"
-      p={{ base: 2, md: 4 }}
-    >
-      {/* Header */}
+    <PageTransition>
       <Flex
-        align="center"
-        justify="center"
-        bg="#2f2f2f"
-        px={{ base: 3, md: 4 }}
-        py={{ base: 2, md: 3 }}
-        borderBottom="4px solid"
-        borderColor="gray.600"
-        boxShadow="sm"
-        borderRadius="2xl"
+        direction="column"
+        h="100vh"
+        w="100%"
+        bg="#242424"
+        p={{ base: 2, md: 4 }}
       >
-        <HStack gap={2}>
-          <FiClock size={24} color="white" />
-          <Text
-            fontSize={{ base: "lg", md: "xl" }}
-            fontWeight="bold"
-            color="white"
-          >
-            Reminder
-          </Text>
-        </HStack>
-      </Flex>
-
-      <Box flex="1" overflowY="auto" p={{ base: 3, md: 4 }}>
-        <VStack gap={3} align="stretch">
-          {reminders.map((reminder, idx) => (
-            <Flex
-              key={idx}
-              gap={3}
-              w="100%"
-              align="center"
-              flexDirection={{ base: "column", md: "row" }}
-              bg={reminder.isSet ? "#445775" : "#2f2f2f"}
-              p={3}
-              borderRadius="xl"
-              borderBottom="4px solid"
-              borderColor="gray.600"
+        {/* Header */}
+        <Flex
+          align="center"
+          justify="center"
+          bg="#2f2f2f"
+          px={{ base: 3, md: 4 }}
+          py={{ base: 2, md: 3 }}
+          borderBottom="4px solid"
+          borderColor="gray.600"
+          boxShadow="sm"
+          borderRadius="2xl"
+        >
+          <HStack gap={2}>
+            <FiClock size={24} color="white" />
+            <Text
+              fontSize={{ base: "lg", md: "xl" }}
+              fontWeight="bold"
+              color="white"
             >
-              <Box w={{ base: "100%", md: "25%" }}>
-                <Select
-                  options={medicineOptions}
-                  value={
-                    reminder.medicine
-                      ? { value: reminder.medicine, label: reminder.medicine }
-                      : null
-                  }
-                  onChange={(selected) =>
-                    handleChange(idx, "medicine", selected?.value || "")
-                  }
-                  placeholder="Pilih Obat"
-                  isClearable
-                  styles={customSelectStyles}
-                />
-              </Box>
+              Reminder
+            </Text>
+          </HStack>
+        </Flex>
 
-              <Input
-                type="date"
-                value={reminder.date}
-                onChange={(e) => handleDateChange(idx, e.target.value)}
-                bg="white"
-                color="black"
-                borderRadius="12px"
-                fontSize="sm"
-                borderColor="gray.200"
-                w={{ base: "100%", md: "20%" }}
-              />
-
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={reminder.hour}
-                onChange={(e) => handleHourChange(idx, e.target.value)}
-                bg="white"
-                color="black"
-                borderRadius="12px"
-                fontSize="sm"
-                borderColor="gray.200"
-                w={{ base: "100%", md: "18%" }}
-                placeholder="Jam (0-23)"
-              />
-
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={reminder.minute}
-                onChange={(e) => handleMinuteChange(idx, e.target.value)}
-                bg="white"
-                color="black"
-                borderRadius="12px"
-                fontSize="sm"
-                borderColor="gray.200"
-                w={{ base: "100%", md: "18%" }}
-                placeholder="Menit (0-59)"
-              />
-
-              {/* Toggle & Delete — kiri di mobile, kanan di desktop */}
+        <Box
+          ref={containerRef}
+          flex="1"
+          overflowY="auto"
+          p={{ base: 3, md: 4 }}
+        >
+          <VStack gap={3} align="stretch">
+            {reminders.map((reminder, idx) => (
               <Flex
+                key={idx}
+                gap={3}
+                w="100%"
                 align="center"
-                gap={2}
-                justify={{ base: "flex-start", md: "flex-end" }}
-                ml={{ base: 0, md: "auto" }}
-                w={{ base: "100%", md: "auto" }}
+                flexDirection={{ base: "column", md: "row" }}
+                bg={reminder.isSet ? "#445775" : "#2f2f2f"}
+                p={3}
+                borderRadius="xl"
+                borderBottom="4px solid"
+                borderColor="gray.600"
               >
-                <label
-                  style={{
-                    position: "relative",
-                    display: "inline-block",
-                    width: 50,
-                    height: 26,
-                    margin: 0,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={reminder.isSet}
-                    onChange={() => handleToggleSet(idx)}
-                    style={{ opacity: 0, width: 0, height: 0 }}
+                <Box w={{ base: "100%", md: "25%" }}>
+                  <Select
+                    options={medicineOptions}
+                    value={
+                      reminder.medicine
+                        ? { value: reminder.medicine, label: reminder.medicine }
+                        : null
+                    }
+                    onChange={(selected) =>
+                      handleChange(idx, "medicine", selected?.value || "")
+                    }
+                    placeholder="Pilih Obat"
+                    isClearable
+                    styles={customSelectStyles}
                   />
-                  <span
-                    style={{
-                      position: "absolute",
-                      cursor: "pointer",
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: reminder.isSet ? "#FFAE00" : "#ccc",
-                      borderRadius: 34,
-                      transition: ".4s",
-                    }}
-                  ></span>
-                  <span
-                    style={{
-                      position: "absolute",
-                      content: '""',
-                      height: 22,
-                      width: 22,
-                      left: reminder.isSet ? 26 : 2,
-                      bottom: 2,
-                      backgroundColor: "white",
-                      borderRadius: "50%",
-                      transition: ".4s",
-                    }}
-                  ></span>
-                </label>
-                <Text color="white" fontSize="sm">
-                  {reminder.isSet ? "Aktif" : "Nonaktif"}
-                </Text>
-                <FiTrash2
-                  color="white"
-                  size={18}
-                  style={{ cursor: "pointer", marginLeft: 8 }}
-                  onClick={() => handleDeleteRow(idx)}
-                />
-              </Flex>
-            </Flex>
-          ))}
+                </Box>
 
-          <Button
-            onClick={handleAdd}
-            bg="green.600"
-            color="white"
-            borderRadius="xl"
-            size="sm"
-            w={{ base: "100%", md: "fit-content" }}
-            _hover={{ bg: "green.500" }}
-          >
-            <FiPlus style={{ marginRight: 6 }} /> Add
-          </Button>
-        </VStack>
-      </Box>
-    </Flex>
+                <Input
+                  type="date"
+                  value={reminder.date}
+                  onChange={(e) => handleDateChange(idx, e.target.value)}
+                  bg="white"
+                  color="black"
+                  borderRadius="12px"
+                  fontSize="sm"
+                  borderColor="gray.200"
+                  w={{ base: "100%", md: "20%" }}
+                />
+
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={reminder.hour}
+                  onChange={(e) => handleHourChange(idx, e.target.value)}
+                  bg="white"
+                  color="black"
+                  borderRadius="12px"
+                  fontSize="sm"
+                  borderColor="gray.200"
+                  w={{ base: "100%", md: "18%" }}
+                  placeholder="Jam (0-23)"
+                />
+
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  value={reminder.minute}
+                  onChange={(e) => handleMinuteChange(idx, e.target.value)}
+                  bg="white"
+                  color="black"
+                  borderRadius="12px"
+                  fontSize="sm"
+                  borderColor="gray.200"
+                  w={{ base: "100%", md: "18%" }}
+                  placeholder="Menit (0-59)"
+                />
+
+                {/* Toggle & Delete */}
+                <Flex
+                  align="center"
+                  gap={2}
+                  justify={{ base: "flex-start", md: "flex-end" }}
+                  ml={{ base: 0, md: "auto" }}
+                  w={{ base: "100%", md: "auto" }}
+                >
+                  <label
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                      width: 50,
+                      height: 26,
+                      margin: 0,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={reminder.isSet}
+                      onChange={() => handleToggleSet(idx)}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span
+                      style={{
+                        position: "absolute",
+                        cursor: "pointer",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: reminder.isSet ? "#FFAE00" : "#ccc",
+                        borderRadius: 34,
+                        transition: ".4s",
+                      }}
+                    ></span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        content: '""',
+                        height: 22,
+                        width: 22,
+                        left: reminder.isSet ? 26 : 2,
+                        bottom: 2,
+                        backgroundColor: "white",
+                        borderRadius: "50%",
+                        transition: ".4s",
+                      }}
+                    ></span>
+                  </label>
+                  <Text color="white" fontSize="sm">
+                    {reminder.isSet ? "Aktif" : "Nonaktif"}
+                  </Text>
+                  <FiTrash2
+                    color="white"
+                    size={18}
+                    style={{ cursor: "pointer", marginLeft: 8 }}
+                    onClick={() => handleDeleteRow(idx)}
+                  />
+                </Flex>
+              </Flex>
+            ))}
+
+            <Button
+              onClick={handleAdd}
+              bg="green.600"
+              color="white"
+              borderRadius="xl"
+              size="sm"
+              w={{ base: "100%", md: "fit-content" }}
+              _hover={{ bg: "green.500" }}
+            >
+              <FiPlus style={{ marginRight: 6 }} /> Add
+            </Button>
+          </VStack>
+        </Box>
+      </Flex>
+    </PageTransition>
   );
 };
 
