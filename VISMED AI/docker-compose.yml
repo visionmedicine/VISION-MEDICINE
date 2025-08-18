@@ -1,0 +1,17 @@
+version: "3.1"
+services:
+  n8n:
+    image: n8nio/n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_DISABLE_EXTERNAL_MODULES=false
+      - N8N_EXTERNAL_MODULES_ALLOW_LIST=axios,form-data
+      - WEBHOOK_URL=https://ac6d6500ac3a.ngrok-free.app
+      - GENERIC_TIMEZONE=Asia/Jakarta
+      - TZ=Asia/Jakarta
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+    volumes:
+      - ~/.n8n:/home/node/.n8n
