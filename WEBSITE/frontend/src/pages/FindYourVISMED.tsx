@@ -1,11 +1,70 @@
 // src/pages/FindYourVISMED.tsx
-import { useRef } from "react";
-import { Box, Flex, Text, HStack, SimpleGrid } from "@chakra-ui/react";
-import { FiMapPin } from "react-icons/fi";
+import { useEffect, useRef } from "react";
+import { Box, Flex, Text, VStack, HStack } from "@chakra-ui/react";
+import { FiMapPin, FiMap } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
+import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
+
+declare global {
+  interface Window {
+    google: any;
+  }
+}
 
 const FindYourVISMED = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<any>(null);
+
+  const alatLocation = {
+    lat: -7.919596235477069,
+    lng: 112.59541158001561,
+  };
+
+  useEffect(() => {
+    loadGoogleMaps(import.meta.env.VITE_GOOGLE_MAPS_KEY).then(() => {
+      if (mapContainerRef.current && !mapRef.current) {
+        mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
+          center: alatLocation,
+          zoom: 15,
+        });
+
+        new window.google.maps.Marker({
+          position: alatLocation,
+          map: mapRef.current,
+          title: "Lokasi VISMED",
+        });
+      }
+    });
+  }, []);
+
+  const handleBell = async () => {
+    try {
+      await fetch("http://localhost:5000/api/bell", { method: "POST" });
+      alert("🔔 Bel ditekan, cek ESP32!");
+    } catch (err) {
+      console.error("Gagal trigger bel", err);
+    }
+  };
+
+  const handleDirection = async () => {
+    try {
+      const res = await fetch(
+        "http://localhost:5000/api/maps/directions?origin=Malang&destination=Batu"
+      );
+      const data = await res.json();
+      console.log("Directions API Response:", data);
+      alert("🚗 Directions berhasil diambil, cek console.log");
+    } catch (err) {
+      console.error("Gagal ambil directions", err);
+    }
+  };
+
+  const handleLocation = () => {
+    if (mapRef.current) {
+      mapRef.current.setCenter(alatLocation);
+      mapRef.current.setZoom(15);
+    }
+  };
 
   return (
     <PageTransition>
@@ -40,67 +99,93 @@ const FindYourVISMED = () => {
           </HStack>
         </Flex>
 
-        {/* Maps Area */}
+        {/* Maps */}
         <Box
           ref={mapContainerRef}
           flex="1"
           bg="gray.300"
           m={{ base: 2, md: 4 }}
           borderRadius="2xl"
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
           fontSize={{ base: "sm", md: "lg" }}
           color="black"
-        >
-          Maps Area (Google Maps API Here)
-        </Box>
+        />
 
         {/* Bottom Buttons */}
-        <Box
-          p={{ base: 2, md: 3 }}
+        <Flex
+          p={{ base: 3, md: 4 }}
           bg="#2f2f2f"
           borderRadius="2xl"
           borderTop="4px solid"
           borderColor="gray.600"
+          justify="space-between"
+          align="center"
         >
-          <SimpleGrid columns={2} gap={3}>
-            <Box
-              bg="#445775"
-              color="white"
-              textAlign="center"
-              py={{ base: 3, md: 4 }}
-              borderRadius="xl"
-              fontWeight="bold"
-              fontSize={{ base: "md", md: "lg" }}
-              cursor="pointer"
-              transition="background-color 0.2s ease, color 0.2s ease"
-              _hover={{
-                bg: "#5a6f91",
-                color: "whiteAlpha.900",
-              }}
-            >
-              Bel
-            </Box>
-            <Box
-              bg="#445775"
-              color="white"
-              textAlign="center"
-              py={{ base: 3, md: 4 }}
-              borderRadius="xl"
-              fontWeight="bold"
-              fontSize={{ base: "md", md: "lg" }}
-              cursor="pointer"
-              transition="background-color 0.2s ease, color 0.2s ease"
-              _hover={{
-                bg: "#5a6f91",
-                color: "whiteAlpha.900",
-              }}
-            >
-              Petunjuk
-            </Box>
-          </SimpleGrid>
-        </Box>
+          {/* Direction */}
+          <Box
+            onClick={handleDirection}
+            flex="1"
+            mx={1}
+            bg="teal.600"
+            color="white"
+            textAlign="center"
+            py={{ base: 3, md: 4 }}
+            borderRadius="xl"
+            cursor="pointer"
+            transition="0.2s"
+            _hover={{ bg: "teal.700" }}
+          >
+            <VStack gap={1}>
+              <FiMap size={20} />
+              <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
+                Direction
+              </Text>
+            </VStack>
+          </Box>
+
+          {/* Bell */}
+          <Box
+            onClick={handleBell}
+            flex="1"
+            mx={1}
+            bg="#445775"
+            color="white"
+            textAlign="center"
+            py={{ base: 3, md: 4 }}
+            borderRadius="xl"
+            cursor="pointer"
+            transition="0.2s"
+            _hover={{ bg: "#5a6f91" }}
+          >
+            <VStack gap={1}>
+              <Text fontSize={{ base: "lg", md: "xl" }}>🔔</Text>
+              <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
+                Bell
+              </Text>
+            </VStack>
+          </Box>
+
+          {/* Location */}
+          <Box
+            onClick={handleLocation}
+            flex="1"
+            mx={1}
+            bg="purple.600"
+            color="white"
+            textAlign="center"
+            py={{ base: 3, md: 4 }}
+            borderRadius="xl"
+            cursor="pointer"
+            transition="0.2s"
+            _hover={{ bg: "purple.700" }}
+          >
+            <VStack gap={1}>
+              <FiMapPin size={20} />
+              <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
+                Location
+              </Text>
+            </VStack>
+          </Box>
+        </Flex>
       </Flex>
     </PageTransition>
   );
