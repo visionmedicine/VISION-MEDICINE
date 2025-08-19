@@ -13,9 +13,7 @@ const Home = lazy(() => import("@/pages/Home"));
 const VISMEDTalks = lazy(() => import("@/pages/VISMEDTalks"));
 const FindYourVISMED = lazy(() => import("@/pages/FindYourVISMED"));
 const MedicineInformation = lazy(() => import("@/pages/MedicineInformation"));
-const DrugHistory = lazy(() => import("@/pages/DrugHistory"));
 const Reminder = lazy(() => import("@/pages/Reminder"));
-const Setting = lazy(() => import("@/pages/Setting"));
 
 // Keyframes animasi titik bergelombang
 const waveDots = keyframes`
@@ -121,26 +119,10 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "drug-history",
-        element: (
-          <Suspense fallback={<LoadingScreen />}>
-            <DrugHistory />
-          </Suspense>
-        ),
-      },
-      {
         path: "reminder",
         element: (
           <Suspense fallback={<LoadingScreen />}>
             <Reminder />
-          </Suspense>
-        ),
-      },
-      {
-        path: "setting",
-        element: (
-          <Suspense fallback={<LoadingScreen />}>
-            <Setting />
           </Suspense>
         ),
       },

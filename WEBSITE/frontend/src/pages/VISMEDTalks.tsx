@@ -8,50 +8,50 @@ import {
   IconButton,
   Text,
   HStack,
+  Spinner,
 } from "@chakra-ui/react";
 import { FiMic, FiSend } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
 
-// Script balasan VISMED berurutan
-const vismedReplies = [
-  "Halo! Ada yang bisa VISMED bantu?",
-  "Hai kak, aku VISMED, asisten virtual yang terintegrasi dengan alat VISMED, yaitu smart glasses berbasis machine learning buat bantu temen-temen tunanetra. Saya bisa kasih info obat, jawab pertanyaan umum, atau bantu hal lain. Apa yang mau kakak tanyain?",
-  "Halo kak, aku paham banget kalau lagi pusing itu bikin nggak nyaman. 😊\nTapi sebelum minum obat, coba dulu istirahat sebentar di tempat tenang, minum air putih, atau pijat pelan bagian pelipis.\n\nKalau masih terasa pusing, biasanya orang menggunakan obat seperti paracetamol atau ibuprofen. Tapi penting banget, kak: jangan sembarangan minum obat tanpa tahu penyebab pastinya. Kalau pusing sering muncul, sebaiknya konsultasi ke dokter biar lebih aman.\n\nMau aku bantuin bacain informasi detail tentang obat pusing yang ada di sekitar kakak?",
-  "Kalau kakak kebetulan lagi ada obat di rumah, aku bisa bantu bacain nama dan aturan pakainya biar lebih jelas. Tinggal arahkan kemasan obat ke kacamata, nanti aku bantu identifikasi.\n\nOh iya kak, jangan lupa makan dulu sebelum minum obat, terutama kalau itu obat yang bisa bikin perut perih. Kalau pusingnya masih berlanjut atau makin berat, sebaiknya segera hubungi tenaga medis ya. Kesehatan kakak yang utama. 🌷",
-];
+// ==== Tambahan Type untuk Web Speech API ====
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+
+  interface SpeechRecognition extends EventTarget {
+    lang: string;
+    continuous: boolean;
+    interimResults: boolean;
+    start: () => void;
+    stop: () => void;
+    onresult: (event: SpeechRecognitionEvent) => void;
+    onerror: (event: any) => void;
+    onend: () => void;
+  }
+
+  interface SpeechRecognitionEvent extends Event {
+    results: SpeechRecognitionResultList;
+  }
+}
+// ===========================================
+
+interface Message {
+  from: "user" | "vismed";
+  text: string;
+}
 
 const VISMEDTalks = () => {
-  // Awalnya kosong, karena user yang pertama kali chat
-  const [messages, setMessages] = useState<{ from: string; text: string }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [replyIndex, setReplyIndex] = useState(0); // VISMED mulai dari balasan pertama
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScroll = useRef(true);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-
-    // Tambahkan pesan user
-    setMessages((prev) => [...prev, { from: "user", text: input.trim() }]);
-    setInput("");
-
-    // Balasan VISMED sesuai urutan
-    if (replyIndex < vismedReplies.length) {
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          {
-            from: "vismed",
-            text: vismedReplies[replyIndex],
-          },
-        ]);
-        setReplyIndex((prev) => prev + 1);
-      }, 1000);
-    }
-  };
-
+  // Scroll otomatis ke bawah
   const checkIfAtBottom = () => {
     if (!chatContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
@@ -64,6 +64,81 @@ const VISMEDTalks = () => {
         chatContainerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Inisialisasi SpeechRecognition
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition: SpeechRecognition = new SpeechRecognition();
+      recognition.lang = "id-ID"; // Bahasa Indonesia
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error", event.error);
+        setIsListening(false);
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognitionRef.current = recognition;
+    } else {
+      console.warn("Browser tidak mendukung SpeechRecognition");
+    }
+  }, []);
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const userMessage = input.trim();
+    setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
+    setInput("");
+
+    setIsTyping(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await res.json();
+      setMessages((prev) => [...prev, { from: "vismed", text: data.reply }]);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { from: "vismed", text: "Terjadi error, coba lagi nanti 😅" },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
+  const handleMicClick = () => {
+    if (!recognitionRef.current) {
+      alert("Browser Anda tidak mendukung speech recognition.");
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      setIsListening(true);
+      recognitionRef.current.start();
+    }
+  };
 
   return (
     <PageTransition>
@@ -79,7 +154,6 @@ const VISMEDTalks = () => {
           align="center"
           justify="center"
           bg="#2f2f2f"
-          color="black"
           px={{ base: 3, md: 4 }}
           py={{ base: 2, md: 3 }}
           borderBottom="4px solid"
@@ -119,13 +193,28 @@ const VISMEDTalks = () => {
                 py={{ base: 2, md: 2 }}
                 borderRadius="xl"
                 wordBreak="break-word"
-                whiteSpace="pre-wrap" // supaya line break terbaca
+                whiteSpace="pre-wrap"
                 boxShadow="sm"
                 fontSize={{ base: "sm", md: "md" }}
               >
                 {msg.text}
               </Box>
             ))}
+
+            {isTyping && (
+              <Flex
+                align="center"
+                gap={2}
+                maxW={{ base: "85%", md: "70%" }}
+                bg="#445775"
+                px={4}
+                py={2}
+                borderRadius="xl"
+              >
+                <Spinner size="sm" color="white" />
+                <Text color="white">VISMED sedang mengetik...</Text>
+              </Flex>
+            )}
           </VStack>
         </Box>
 
@@ -143,12 +232,13 @@ const VISMEDTalks = () => {
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme="blue"
+            colorScheme={isListening ? "red" : "blue"}
             position="absolute"
             left={{ base: "6px", md: "10px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
+            onClick={handleMicClick}
           >
             <FiMic />
           </IconButton>
