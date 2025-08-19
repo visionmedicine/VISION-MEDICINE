@@ -12,31 +12,44 @@ import {
 import { FiMic, FiSend } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
 
+// Script balasan VISMED berurutan
+const vismedReplies = [
+  "Halo! Ada yang bisa VISMED bantu?",
+  "Hai kak, aku VISMED, asisten virtual yang terintegrasi dengan alat VISMED, yaitu smart glasses berbasis machine learning buat bantu temen-temen tunanetra. Saya bisa kasih info obat, jawab pertanyaan umum, atau bantu hal lain. Apa yang mau kakak tanyain?",
+  "Halo kak, aku paham banget kalau lagi pusing itu bikin nggak nyaman. 😊\nTapi sebelum minum obat, coba dulu istirahat sebentar di tempat tenang, minum air putih, atau pijat pelan bagian pelipis.\n\nKalau masih terasa pusing, biasanya orang menggunakan obat seperti paracetamol atau ibuprofen. Tapi penting banget, kak: jangan sembarangan minum obat tanpa tahu penyebab pastinya. Kalau pusing sering muncul, sebaiknya konsultasi ke dokter biar lebih aman.\n\nMau aku bantuin bacain informasi detail tentang obat pusing yang ada di sekitar kakak?",
+  "Kalau kakak kebetulan lagi ada obat di rumah, aku bisa bantu bacain nama dan aturan pakainya biar lebih jelas. Tinggal arahkan kemasan obat ke kacamata, nanti aku bantu identifikasi.\n\nOh iya kak, jangan lupa makan dulu sebelum minum obat, terutama kalau itu obat yang bisa bikin perut perih. Kalau pusingnya masih berlanjut atau makin berat, sebaiknya segera hubungi tenaga medis ya. Kesehatan kakak yang utama. 🌷",
+];
+
 const VISMEDTalks = () => {
-  const [messages, setMessages] = useState([
-    { from: "vismed", text: "Halo! Ada yang bisa VISMED bantu?" },
-    {
-      from: "user",
-      text: "Halo VISMED, saya ingin tahu lebih tentang layanan Anda.",
-    },
-  ]);
+  // Awalnya kosong, karena user yang pertama kali chat
+  const [messages, setMessages] = useState<{ from: string; text: string }[]>(
+    []
+  );
   const [input, setInput] = useState("");
+  const [replyIndex, setReplyIndex] = useState(0); // VISMED mulai dari balasan pertama
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScroll = useRef(true);
 
   const handleSend = () => {
     if (!input.trim()) return;
 
+    // Tambahkan pesan user
     setMessages((prev) => [...prev, { from: "user", text: input.trim() }]);
     setInput("");
 
-    // Simulasi balasan VISMED
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { from: "vismed", text: "Terima kasih atas pertanyaannya!" },
-      ]);
-    }, 1000);
+    // Balasan VISMED sesuai urutan
+    if (replyIndex < vismedReplies.length) {
+      setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            from: "vismed",
+            text: vismedReplies[replyIndex],
+          },
+        ]);
+        setReplyIndex((prev) => prev + 1);
+      }, 1000);
+    }
   };
 
   const checkIfAtBottom = () => {
@@ -106,6 +119,7 @@ const VISMEDTalks = () => {
                 py={{ base: 2, md: 2 }}
                 borderRadius="xl"
                 wordBreak="break-word"
+                whiteSpace="pre-wrap" // supaya line break terbaca
                 boxShadow="sm"
                 fontSize={{ base: "sm", md: "md" }}
               >
