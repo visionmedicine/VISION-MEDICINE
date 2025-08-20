@@ -30,6 +30,7 @@ interface Medicine {
   golongan: string;
 }
 
+// Normalisasi string (case-insensitive, hilangkan spasi ekstra, aksen)
 const normalize = (s: string) =>
   (s || "")
     .normalize("NFKD")
@@ -68,13 +69,11 @@ const MedicineInformation = () => {
     fetchMedicines();
   }, []);
 
-  // Hanya filter berdasarkan NAMA obat
+  // Filter: hanya berdasarkan nama obat, fleksibel substring
   const filteredMedicines = useMemo(() => {
     const q = normalize(input);
     if (!q) return medicines;
     return medicines.filter((med) => normalize(med.name).includes(q));
-    // Jika ingin cocok PERSIS, ganti baris di atas dengan:
-    // return medicines.filter((med) => normalize(med.name) === q);
   }, [input, medicines]);
 
   const handleReset = () => {
@@ -140,7 +139,7 @@ const MedicineInformation = () => {
               {filteredMedicines.length > 0 ? (
                 filteredMedicines.map((med, index) => {
                   const column = index % 2 === 0 ? "left" : "right";
-                  const keyId = `${med.name}-${index}`; // key unik per kartu
+                  const keyId = `${med.name}-${index}`;
                   const isOpen =
                     column === "left"
                       ? openStatesLeft[keyId]
