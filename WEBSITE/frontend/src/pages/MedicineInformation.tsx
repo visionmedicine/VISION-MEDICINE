@@ -8,9 +8,9 @@ import {
   Text,
   HStack,
   SimpleGrid,
-  Spinner,
 } from "@chakra-ui/react";
 import { Collapse } from "@chakra-ui/transition";
+import { keyframes } from "@emotion/react";
 import {
   FaPills,
   FaSearch,
@@ -37,6 +37,12 @@ const normalize = (s: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
+
+// Keyframes animasi wavy loader (Emotion)
+const wave = keyframes`
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+`;
 
 const MedicineInformation = () => {
   const [input, setInput] = useState("");
@@ -131,8 +137,25 @@ const MedicineInformation = () => {
           p={{ base: 3, md: 4 }}
         >
           {loading ? (
-            <Flex justify="center" align="center" h="full">
-              <Spinner size="xl" color="white" />
+            <Flex
+              justify="center"
+              align="center"
+              h="full"
+              gap={2}
+              role="status"
+              aria-label="Memuat data obat"
+            >
+              {[0, 1, 2].map((i) => (
+                <Box
+                  key={i}
+                  w="12px"
+                  h="12px"
+                  borderRadius="full"
+                  bg="white"
+                  animation={`${wave} 1s ease-in-out infinite`}
+                  animationDelay={`${i * 0.2}s`}
+                />
+              ))}
             </Flex>
           ) : (
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
