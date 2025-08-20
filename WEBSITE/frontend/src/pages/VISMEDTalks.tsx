@@ -205,14 +205,18 @@ const VISMEDTalks = () => {
               <Flex
                 align="center"
                 gap={2}
-                maxW={{ base: "85%", md: "70%" }}
+                alignSelf="flex-start"
                 bg="#445775"
-                px={4}
+                px={3}
                 py={2}
                 borderRadius="xl"
+                boxShadow="sm"
+                w="fit-content"
               >
                 <Spinner size="sm" color="white" />
-                <Text color="white">VISMED sedang mengetik...</Text>
+                <Text color="white" fontSize={{ base: "sm", md: "md" }}>
+                  VISMED sedang mengetik...
+                </Text>
               </Flex>
             )}
           </VStack>
