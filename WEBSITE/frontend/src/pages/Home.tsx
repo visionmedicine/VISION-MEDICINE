@@ -154,6 +154,7 @@ const Home = () => {
             boxShadow="md"
             borderRadius="md"
             p={4}
+            borderLeft="4px solid white" // garis putih di kiri
           >
             <Heading fontSize="lg" color="white" mb={2}>
               {`${titlePrefix} ${index + 1}`}
@@ -291,7 +292,7 @@ const Home = () => {
             mr={4}
           />
           <Box>
-            <Text fontSize={{ base: "md", md: "lg" }} lineHeight="tall">
+            <Text fontSize={{ base: "sm", md: "md" }} lineHeight="tall">
               "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
               manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
               baru bagi saudara saudara kita yang membutuhkan akses informasi
@@ -302,6 +303,7 @@ const Home = () => {
               fontWeight="bold"
               fontStyle="italic"
               transform="skewX(-20deg)"
+              fontSize={{ base: "xs", md: "sm" }}
             >
               ---- Member of VISMED ----
             </Text>
