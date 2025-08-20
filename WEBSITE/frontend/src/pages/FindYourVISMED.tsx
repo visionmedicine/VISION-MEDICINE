@@ -15,6 +15,7 @@ const FindYourVISMED = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
 
+  // Lokasi tujuan (alat VISMED)
   const alatLocation = {
     lat: -7.919596235477069,
     lng: 112.59541158001561,
@@ -37,6 +38,7 @@ const FindYourVISMED = () => {
     });
   }, []);
 
+  // 🔔 Trigger bel
   const handleBell = async () => {
     try {
       await fetch("http://localhost:5000/api/bell", { method: "POST" });
@@ -46,19 +48,29 @@ const FindYourVISMED = () => {
     }
   };
 
-  const handleDirection = async () => {
-    try {
-      const res = await fetch(
-        "http://localhost:5000/api/maps/directions?origin=Malang&destination=Batu"
+  // 🚗 Ambil arah dengan lokasi user sekarang
+  const handleDirection = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+
+          // Buka Google Maps dengan arah dari lokasi user ke alat
+          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${alatLocation.lat},${alatLocation.lng}&travelmode=driving`;
+
+          window.open(gmapsUrl, "_blank"); // buka tab baru
+        },
+        (err) => {
+          console.error("Gagal ambil lokasi user", err);
+          alert("Tidak bisa ambil lokasi Anda. Pastikan GPS aktif.");
+        }
       );
-      const data = await res.json();
-      console.log("Directions API Response:", data);
-      alert("🚗 Directions berhasil diambil, cek console.log");
-    } catch (err) {
-      console.error("Gagal ambil directions", err);
+    } else {
+      alert("Browser Anda tidak mendukung Geolocation.");
     }
   };
 
+  // 🎯 Fokuskan peta ke lokasi alat
   const handleLocation = () => {
     if (mapRef.current) {
       mapRef.current.setCenter(alatLocation);
