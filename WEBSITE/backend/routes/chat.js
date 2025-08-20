@@ -1,6 +1,6 @@
-// routes/chat.js
-const express = require("express");
-const axios = require("axios");
+import express from "express";
+import axios from "axios";
+
 const router = express.Router();
 
 const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL;
@@ -15,7 +15,6 @@ router.post("/", async (req, res) => {
   try {
     const response = await axios.post(N8N_WEBHOOK_URL, { message });
 
-    // 🔎 n8n balikin { output: "..." }, bukan { reply: "..." }
     const aiReply =
       response.data?.reply ||
       response.data?.output ||
@@ -30,4 +29,4 @@ router.post("/", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

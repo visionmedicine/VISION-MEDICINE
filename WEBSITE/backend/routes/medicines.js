@@ -1,8 +1,17 @@
-const express = require("express");
-const { google } = require("googleapis");
-const path = require("path");
+// backend/routes/medicines.js
+import express from "express";
+import { google } from "googleapis";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const router = express.Router();
+
+// __dirname replacement di ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Setup Google Auth
 const auth = new google.auth.GoogleAuth({
@@ -20,7 +29,7 @@ router.get("/", async (req, res) => {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "'100 0bat'!B2:G", // ⬅️ nama sheet harus persis: 100 0bat
+      range: "'100 Obat'!B2:G", // ⬅️ nama sheet harus persis: 100 0bat
       // Kolom B = Nama Obat
       // Kolom C = Kandungan
       // Kolom D = Indikasi
@@ -67,4 +76,4 @@ router.get("/sheets", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

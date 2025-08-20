@@ -38,13 +38,27 @@ const FindYourVISMED = () => {
     });
   }, []);
 
-  // 🔔 Trigger bel
+  // 🔔 Trigger bel (panggil API backend)
   const handleBell = async () => {
     try {
-      await fetch("http://localhost:5000/api/bell", { method: "POST" });
-      alert("🔔 Bel ditekan, cek ESP32!");
+      const res = await fetch("http://localhost:5000/api/bell", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          audioPath: "halo-vismed-disini.mp3", // ganti sesuai nama file di Supabase Storage
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Gagal trigger bel");
+      }
+
+      const data = await res.json();
+      console.log("✅ Bell response:", data);
     } catch (err) {
-      console.error("Gagal trigger bel", err);
+      console.error("❌ Gagal trigger bel:", err);
     }
   };
 
@@ -55,10 +69,9 @@ const FindYourVISMED = () => {
         (pos) => {
           const { latitude, longitude } = pos.coords;
 
-          // Buka Google Maps dengan arah dari lokasi user ke alat
           const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${alatLocation.lat},${alatLocation.lng}&travelmode=driving`;
 
-          window.open(gmapsUrl, "_blank"); // buka tab baru
+          window.open(gmapsUrl, "_blank");
         },
         (err) => {
           console.error("Gagal ambil lokasi user", err);
