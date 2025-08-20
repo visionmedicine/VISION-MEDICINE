@@ -154,7 +154,7 @@ const Home = () => {
             boxShadow="md"
             borderRadius="md"
             p={4}
-            borderLeft="4px solid white" // garis putih di kiri
+            borderLeft="5px solid white" // garis putih di kiri
           >
             <Heading fontSize="lg" color="white" mb={2}>
               {`${titlePrefix} ${index + 1}`}
