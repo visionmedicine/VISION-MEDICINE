@@ -1,5 +1,5 @@
 // src/pages/MedicineInformation.tsx
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   Box,
   Flex,
@@ -30,17 +30,23 @@ interface Medicine {
   golongan: string;
 }
 
+const normalize = (s: string) =>
+  (s || "")
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+
 const MedicineInformation = () => {
   const [input, setInput] = useState("");
   const [medicines, setMedicines] = useState<Medicine[]>([]);
-  const [filteredMedicines, setFilteredMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openStatesLeft, setOpenStatesLeft] = useState<{
-    [key: string]: boolean;
-  }>({});
-  const [openStatesRight, setOpenStatesRight] = useState<{
-    [key: string]: boolean;
-  }>({});
+  const [openStatesLeft, setOpenStatesLeft] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [openStatesRight, setOpenStatesRight] = useState<
+    Record<string, boolean>
+  >({});
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch dari backend
@@ -49,9 +55,10 @@ const MedicineInformation = () => {
       try {
         const res = await fetch("http://localhost:5000/api/medicines");
         const data: Medicine[] = await res.json();
-        const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+        const sorted = data
+          .filter((m) => !!m?.name)
+          .sort((a, b) => a.name.localeCompare(b.name));
         setMedicines(sorted);
-        setFilteredMedicines(sorted);
       } catch (error) {
         console.error("❌ Error fetching medicines:", error);
       } finally {
@@ -61,39 +68,27 @@ const MedicineInformation = () => {
     fetchMedicines();
   }, []);
 
-  // Filter search
-  useEffect(() => {
-    if (!input.trim()) {
-      setFilteredMedicines(medicines);
-      if (containerRef.current) containerRef.current.scrollTop = 0;
-      return;
-    }
-    const filtered = medicines.filter(
-      (med) =>
-        med.name.toLowerCase().includes(input.toLowerCase()) ||
-        med.kandungan.toLowerCase().includes(input.toLowerCase()) ||
-        med.indikasi.toLowerCase().includes(input.toLowerCase()) ||
-        med.efekSamping.toLowerCase().includes(input.toLowerCase()) ||
-        med.dosis.toLowerCase().includes(input.toLowerCase()) ||
-        med.golongan.toLowerCase().includes(input.toLowerCase())
-    );
-    setFilteredMedicines(filtered);
-    if (containerRef.current) containerRef.current.scrollTop = 0;
+  // Hanya filter berdasarkan NAMA obat
+  const filteredMedicines = useMemo(() => {
+    const q = normalize(input);
+    if (!q) return medicines;
+    return medicines.filter((med) => normalize(med.name).includes(q));
+    // Jika ingin cocok PERSIS, ganti baris di atas dengan:
+    // return medicines.filter((med) => normalize(med.name) === q);
   }, [input, medicines]);
 
   const handleReset = () => {
     setInput("");
-    setFilteredMedicines(medicines);
     setOpenStatesLeft({});
     setOpenStatesRight({});
     if (containerRef.current) containerRef.current.scrollTop = 0;
   };
 
-  const toggleDropdown = (name: string, column: "left" | "right") => {
+  const toggleDropdown = (keyId: string, column: "left" | "right") => {
     if (column === "left") {
-      setOpenStatesLeft((prev) => ({ ...prev, [name]: !prev[name] }));
+      setOpenStatesLeft((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
     } else {
-      setOpenStatesRight((prev) => ({ ...prev, [name]: !prev[name] }));
+      setOpenStatesRight((prev) => ({ ...prev, [keyId]: !prev[keyId] }));
     }
   };
 
@@ -145,14 +140,15 @@ const MedicineInformation = () => {
               {filteredMedicines.length > 0 ? (
                 filteredMedicines.map((med, index) => {
                   const column = index % 2 === 0 ? "left" : "right";
+                  const keyId = `${med.name}-${index}`; // key unik per kartu
                   const isOpen =
                     column === "left"
-                      ? openStatesLeft[med.name]
-                      : openStatesRight[med.name];
+                      ? openStatesLeft[keyId]
+                      : openStatesRight[keyId];
 
                   return (
                     <Box
-                      key={med.name}
+                      key={keyId}
                       bg="#445775"
                       color="white"
                       borderRadius="2xl"
@@ -172,7 +168,7 @@ const MedicineInformation = () => {
                         justify="space-between"
                         borderBottom={isOpen ? "1px solid" : "none"}
                         borderColor="gray.600"
-                        onClick={() => toggleDropdown(med.name, column)}
+                        onClick={() => toggleDropdown(keyId, column)}
                       >
                         <Text
                           fontWeight="bold"
@@ -182,6 +178,7 @@ const MedicineInformation = () => {
                         </Text>
                         {isOpen ? <FaChevronUp /> : <FaChevronDown />}
                       </HStack>
+
                       <Collapse in={isOpen} animateOpacity>
                         <Box
                           px={{ base: 3, md: 4 }}
@@ -249,7 +246,7 @@ const MedicineInformation = () => {
           </IconButton>
 
           <Input
-            placeholder="Cari obat, kegunaan, atau efek samping..."
+            placeholder="Cari nama obat..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             pl={{ base: "35px", md: "40px" }}
