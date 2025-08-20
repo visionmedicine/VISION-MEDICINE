@@ -7,6 +7,7 @@ const mapsRoute = require("./routes/maps");
 const bellRoute = require("./routes/bell");
 const guideRoute = require("./routes/direction");
 const chatRoute = require("./routes/chat");
+const medicinesRoute = require("./routes/medicines"); 
 
 const app = express();
 app.use(cors());
@@ -17,6 +18,7 @@ app.use("/api/maps", mapsRoute);
 app.use("/api/bell", bellRoute);
 app.use("/api/direction", guideRoute);
 app.use("/api/chat", chatRoute);
+app.use("/api/medicines", medicinesRoute); 
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`✅ Backend jalan di port ${PORT}`));
