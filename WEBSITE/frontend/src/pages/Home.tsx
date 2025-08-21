@@ -291,7 +291,7 @@ const Home = () => {
             borderRadius="full"
             mr={4}
           />
-          <Box pr={{ base: 4, md: 8 }} maxW="1200px">
+          <Box pr={{ base: 4, md: 8 }} maxW="1400px">
             <Text fontSize={{ base: "sm", md: "md" }} lineHeight="tall">
               "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
               manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
