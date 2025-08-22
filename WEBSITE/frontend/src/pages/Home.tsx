@@ -244,7 +244,7 @@ const Home = () => {
             color: "white",
           }}
         >
-          <Heading fontSize={{ base: "lg", md: "2xl" }}>
+          <Heading fontSize={{ base: "17px", md: "2xl" }}>
             ===== Real Time Detection =====
           </Heading>
         </Box>
