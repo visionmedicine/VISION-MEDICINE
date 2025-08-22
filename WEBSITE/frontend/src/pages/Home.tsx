@@ -129,7 +129,8 @@ const Home = () => {
     showRightArrow: boolean,
     setShowLeftArrow: (val: boolean) => void,
     setShowRightArrow: (val: boolean) => void,
-    isLoading: boolean = false
+    isLoading: boolean = false,
+    titleFormatter?: (index: number, item: Product | string) => string
   ) => (
     <Flex mt={4} position="relative" align="center" minH="340px">
       {/* Left Arrow */}
@@ -195,10 +196,12 @@ const Home = () => {
               borderRadius="md"
               p={4}
               borderLeft="5px solid white"
-              minH="320px" // 🔥 samain tinggi dengan Our Product
+              minH="320px"
             >
               <Heading fontSize="lg" color="white" mb={2}>
-                {titlePrefix} {index + 1}
+                {titleFormatter
+                  ? titleFormatter(index, item)
+                  : `${titlePrefix} ${index + 1}`}
               </Heading>
               {typeof item === "string" ? (
                 <Text fontSize="sm" color="white">
@@ -286,7 +289,19 @@ const Home = () => {
             showLeftArrow1,
             showRightArrow1,
             setShowLeftArrow1,
-            setShowRightArrow1
+            setShowRightArrow1,
+            false,
+            // 🔥 Custom title sesuai permintaan
+            (i) =>
+              i === 0
+                ? "Home"
+                : i === 1
+                ? "VISMED Talks"
+                : i === 2
+                ? "Find Your VISMED"
+                : i === 3
+                ? "Medicine Information"
+                : "Reminder"
           )}
         </Box>
 
@@ -334,7 +349,7 @@ const Home = () => {
             showRightArrow2,
             setShowLeftArrow2,
             setShowRightArrow2,
-            loadingProducts // 🔥 loader di bagian produk
+            loadingProducts
           )}
         </Box>
 
