@@ -11,6 +11,11 @@ import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
 import PageTransition from "@/components/layouts/PageTransition";
 
+type Product = {
+  name: string;
+  url: string;
+};
+
 const Home = () => {
   const steps = [
     "Buka Website Vision Medicine",
@@ -25,18 +30,7 @@ const Home = () => {
     "Selesai & Gunakan Informasi",
   ];
 
-  const products = [
-    "Vision Medicine Website",
-    "Mobile App Vision Medicine",
-    "Fitur Deteksi Obat via Kamera",
-    "Database Informasi Obat Terbaru",
-    "Fitur Pemindaian Barcode",
-    "Rekomendasi Obat Alternatif",
-    "Laporan Kesehatan Digital",
-    "Integrasi dengan Apotek Mitra",
-    "Mode Offline Deteksi Obat",
-    "Sistem Notifikasi & Pengingat",
-  ];
+  const [products, setProducts] = useState<Product[]>([]);
 
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
@@ -103,8 +97,27 @@ const Home = () => {
     };
   }, []);
 
+  // ===== FETCH PRODUCTS FROM BACKEND =====
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/products");
+        let data: Product[] = await res.json();
+
+        // 🔥 Filter produk biar gak ada .emptyFolderPlaceholder
+        data = data.filter((item) => item.name !== ".emptyFolderPlaceholder");
+
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to fetch products", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
   const renderHorizontalList = (
-    items: string[],
+    items: Product[] | string[],
     titlePrefix: string,
     ref: React.RefObject<HTMLDivElement | null>,
     showLeftArrow: boolean,
@@ -148,20 +161,40 @@ const Home = () => {
           <Box
             key={index}
             data-step-card
-            minW={{ base: "100%", md: "30%" }}
+            minW={{ base: "100%", md: "30%" }} // 🔥 Mobile full width, Desktop 30%
+            maxW={{ base: "100%", md: "30%" }}
             flexShrink={0}
             bg="#445775"
             boxShadow="md"
             borderRadius="md"
             p={4}
-            borderLeft="5px solid white" // garis putih di kiri
+            borderLeft="5px solid white"
+            minH="320px"
           >
             <Heading fontSize="lg" color="white" mb={2}>
-              {`${titlePrefix} ${index + 1}`}
+              {titlePrefix} {index + 1}
             </Heading>
-            <Text fontSize="sm" color="white">
-              {item}
-            </Text>
+            {typeof item === "string" ? (
+              <Text fontSize="sm" color="white">
+                {item}
+              </Text>
+            ) : (
+              <Box textAlign="center">
+                <img
+                  src={item.url}
+                  alt={item.name}
+                  style={{
+                    width: "100%",
+                    height: "220px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                  }}
+                />
+                <Text fontSize="sm" color="white" mt={2}>
+                  {item.name}
+                </Text>
+              </Box>
+            )}
           </Box>
         ))}
       </Flex>
