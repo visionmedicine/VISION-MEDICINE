@@ -252,6 +252,7 @@ const MedicineInformation = () => {
           borderRadius="2xl"
           boxShadow="md"
           position="relative"
+          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
         >
           <IconButton
             aria-label="Mic"

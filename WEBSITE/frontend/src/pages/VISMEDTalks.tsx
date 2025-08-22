@@ -230,6 +230,7 @@ const VISMEDTalks = () => {
           bg="#2f2f2f"
           position="relative"
           borderRadius="2xl"
+          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
         >
           {/* Mic button */}
           <IconButton
