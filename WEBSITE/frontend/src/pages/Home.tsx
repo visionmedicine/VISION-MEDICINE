@@ -9,6 +9,7 @@ import {
 } from "@chakra-ui/react";
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
+import { keyframes } from "@emotion/react";
 import PageTransition from "@/components/layouts/PageTransition";
 
 type Product = {
@@ -16,21 +17,23 @@ type Product = {
   url: string;
 };
 
+// 🔥 Keyframes animasi loading
+const wave = keyframes`
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-10px); }
+`;
+
 const Home = () => {
   const steps = [
     "Buka Website Vision Medicine",
     "Masuk ke Akun Anda",
     "Akses Menu Deteksi Obat",
     "Unggah Foto Obat",
-    "Pilih Metode Deteksi",
-    "Tunggu Proses Analisis",
-    "Lihat Hasil Deteksi",
-    "Periksa Detail Obat",
-    "Simpan atau Unduh Hasil",
-    "Selesai & Gunakan Informasi",
+    "Lihat Hasil Deteksi", // 🔥 cuma 5 langkah
   ];
 
   const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true); // 🔥 loading state
 
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
@@ -110,6 +113,8 @@ const Home = () => {
         setProducts(data);
       } catch (err) {
         console.error("Failed to fetch products", err);
+      } finally {
+        setLoadingProducts(false); // 🔥 stop loading
       }
     };
 
@@ -123,10 +128,12 @@ const Home = () => {
     showLeftArrow: boolean,
     showRightArrow: boolean,
     setShowLeftArrow: (val: boolean) => void,
-    setShowRightArrow: (val: boolean) => void
+    setShowRightArrow: (val: boolean) => void,
+    isLoading: boolean = false
   ) => (
-    <Flex mt={4} position="relative" align="center">
-      {showLeftArrow && (
+    <Flex mt={4} position="relative" align="center" minH="340px">
+      {/* Left Arrow */}
+      {showLeftArrow && !isLoading && (
         <IconButton
           aria-label="Scroll Left"
           onClick={() => scrollHorizontally(ref, "left")}
@@ -144,6 +151,7 @@ const Home = () => {
         </IconButton>
       )}
 
+      {/* Loader or Items */}
       <Flex
         ref={ref}
         gap={4}
@@ -156,50 +164,70 @@ const Home = () => {
           scrollbarWidth: "none",
           WebkitOverflowScrolling: "touch",
         }}
+        w="100%"
+        justify={isLoading ? "center" : "flex-start"}
+        alignItems="center"
       >
-        {items.map((item, index) => (
-          <Box
-            key={index}
-            data-step-card
-            minW={{ base: "100%", md: "30%" }} // 🔥 Mobile full width, Desktop 30%
-            maxW={{ base: "100%", md: "30%" }}
-            flexShrink={0}
-            bg="#445775"
-            boxShadow="md"
-            borderRadius="md"
-            p={4}
-            borderLeft="5px solid white"
-            minH="320px"
-          >
-            <Heading fontSize="lg" color="white" mb={2}>
-              {titlePrefix} {index + 1}
-            </Heading>
-            {typeof item === "string" ? (
-              <Text fontSize="sm" color="white">
-                {item}
-              </Text>
-            ) : (
-              <Box textAlign="center">
-                <img
-                  src={item.url}
-                  alt={item.name}
-                  style={{
-                    width: "100%",
-                    height: "220px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Text fontSize="sm" color="white" mt={2}>
-                  {item.name}
+        {isLoading ? (
+          <Flex gap={2}>
+            {[0, 1, 2].map((i) => (
+              <Box
+                key={i}
+                w="12px"
+                h="12px"
+                borderRadius="full"
+                bg="white"
+                animation={`${wave} 1s ease-in-out infinite`}
+                animationDelay={`${i * 0.2}s`}
+              />
+            ))}
+          </Flex>
+        ) : (
+          items.map((item, index) => (
+            <Box
+              key={index}
+              data-step-card
+              minW={{ base: "100%", md: "30%" }}
+              maxW={{ base: "100%", md: "30%" }}
+              flexShrink={0}
+              bg="#445775"
+              boxShadow="md"
+              borderRadius="md"
+              p={4}
+              borderLeft="5px solid white"
+              minH="320px" // 🔥 samain tinggi dengan Our Product
+            >
+              <Heading fontSize="lg" color="white" mb={2}>
+                {titlePrefix} {index + 1}
+              </Heading>
+              {typeof item === "string" ? (
+                <Text fontSize="sm" color="white">
+                  {item}
                 </Text>
-              </Box>
-            )}
-          </Box>
-        ))}
+              ) : (
+                <Box textAlign="center">
+                  <img
+                    src={item.url}
+                    alt={item.name}
+                    style={{
+                      width: "100%",
+                      height: "220px",
+                      objectFit: "cover",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Text fontSize="sm" color="white" mt={2}>
+                    {item.name}
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          ))
+        )}
       </Flex>
 
-      {showRightArrow && (
+      {/* Right Arrow */}
+      {showRightArrow && !isLoading && (
         <IconButton
           aria-label="Scroll Right"
           onClick={() => scrollHorizontally(ref, "right")}
@@ -305,7 +333,8 @@ const Home = () => {
             showLeftArrow2,
             showRightArrow2,
             setShowLeftArrow2,
-            setShowRightArrow2
+            setShowRightArrow2,
+            loadingProducts // 🔥 loader di bagian produk
           )}
         </Box>
 
