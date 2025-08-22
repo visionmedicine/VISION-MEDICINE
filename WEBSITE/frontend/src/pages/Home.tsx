@@ -249,7 +249,7 @@ const Home = () => {
             color="orange.400"
             fontWeight="bold"
           >
-            Tutorial Step by Step Vision Medicine Website
+            How to Use
           </Heading>
           {renderHorizontalList(
             steps,
