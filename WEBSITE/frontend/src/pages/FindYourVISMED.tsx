@@ -144,6 +144,7 @@ const FindYourVISMED = () => {
           borderColor="gray.600"
           justify="space-between"
           align="center"
+          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
         >
           {/* Direction */}
           <Box
