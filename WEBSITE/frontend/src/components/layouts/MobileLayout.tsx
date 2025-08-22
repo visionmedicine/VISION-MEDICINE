@@ -6,7 +6,7 @@ import Footer from "@/components/footer/Footer.tsx";
 
 const MobileLayout: React.FC = () => {
   return (
-    <Flex direction="column" minH="80vh">
+    <Flex direction="column" minH="100vh">
       <MobileSidebar />
       <Box flex="1" p={2}>
         <Outlet />
