@@ -278,7 +278,7 @@ const Home = () => {
           }}
         >
           <Heading fontSize={{ base: "17px", md: "2xl" }}>
-            ===== Real Time Detection =====
+            ===== Live Stream Detection =====
           </Heading>
         </Box>
 
