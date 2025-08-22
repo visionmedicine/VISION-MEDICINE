@@ -31,7 +31,6 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
       display="flex"
       flexDirection="column"
       borderRight="2px solid #ffffff"
-      boxShadow="2px 0 10px 4px rgba(255, 255, 255, 0.4)"
       transition="width 0.3s ease"
       overflow="hidden"
       zIndex={10}
@@ -60,7 +59,6 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({
           _hover={{ bg: "gray.300" }}
           _focus={{ boxShadow: "none" }}
           borderRadius="full"
-          boxShadow="md"
           onClick={() => setIsOpen((prev) => !prev)}
         >
           {isOpen ? (
