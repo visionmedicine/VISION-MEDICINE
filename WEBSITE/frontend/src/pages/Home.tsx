@@ -245,7 +245,7 @@ const Home = () => {
           }}
         >
           <Heading fontSize={{ base: "lg", md: "2xl" }}>
-            ===== Scan Your Medicine =====
+            ===== Real Time Detection =====
           </Heading>
         </Box>
 
