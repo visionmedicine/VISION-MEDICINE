@@ -42,25 +42,28 @@ const customSelectStyles = {
     borderColor: "#E2E8F0",
     minHeight: "38px",
     height: "38px",
+    fontSize: "16px", // match with inputs
     boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none",
     "&:hover": { borderColor: "#3182CE" },
   }),
-  singleValue: (provided: any) => ({ ...provided, color: "black" }),
+  singleValue: (provided: any) => ({ ...provided, color: "black", fontSize: "16px" }),
   menu: (provided: any) => ({
     ...provided,
     backgroundColor: "white",
     color: "black",
     borderRadius: "12px",
     overflow: "hidden",
+    fontSize: "16px",
   }),
   option: (provided: any, state: any) => ({
     ...provided,
     backgroundColor: state.isSelected ? "#FFAE00" : "white",
     color: "black",
+    fontSize: "16px",
     "&:hover": { backgroundColor: "#ffe0a3" },
   }),
-  placeholder: (provided: any) => ({ ...provided, color: "gray" }),
-  input: (provided: any) => ({ ...provided, color: "black" }),
+  placeholder: (provided: any) => ({ ...provided, color: "gray", fontSize: "16px" }),
+  input: (provided: any) => ({ ...provided, color: "black", fontSize: "16px" }),
 };
 
 const formatDateWithMonthName = (value: string) => {
@@ -91,7 +94,6 @@ const Reminder = () => {
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Scroll to top smoothly on mount
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
@@ -255,7 +257,7 @@ const Reminder = () => {
                   bg="white"
                   color="black"
                   borderRadius="12px"
-                  fontSize="sm"
+                  fontSize="md"
                   borderColor="gray.200"
                   w={{ base: "100%", md: "20%" }}
                 />
@@ -268,7 +270,7 @@ const Reminder = () => {
                   bg="white"
                   color="black"
                   borderRadius="12px"
-                  fontSize="sm"
+                  fontSize="md"
                   borderColor="gray.200"
                   w={{ base: "100%", md: "18%" }}
                   placeholder="Jam (0-23)"
@@ -282,7 +284,7 @@ const Reminder = () => {
                   bg="white"
                   color="black"
                   borderRadius="12px"
-                  fontSize="sm"
+                  fontSize="md"
                   borderColor="gray.200"
                   w={{ base: "100%", md: "18%" }}
                   placeholder="Menit (0-59)"
@@ -338,7 +340,7 @@ const Reminder = () => {
                       }}
                     ></span>
                   </label>
-                  <Text color="white" fontSize="sm">
+                  <Text color="white" fontSize="md">
                     {reminder.isSet ? "Aktif" : "Nonaktif"}
                   </Text>
                   <FiTrash2
