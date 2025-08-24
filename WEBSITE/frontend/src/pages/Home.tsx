@@ -1,4 +1,3 @@
-// src/pages/Home.tsx
 import {
   Box,
   Heading,
@@ -12,7 +11,7 @@ import { useRef, useState, useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import PageTransition from "@/components/layouts/PageTransition";
 
-type Product = {
+type MediaItem = {
   name: string;
   url: string;
 };
@@ -24,16 +23,10 @@ const wave = keyframes`
 `;
 
 const Home = () => {
-  const steps = [
-    "Buka Website Vision Medicine",
-    "Masuk ke Akun Anda",
-    "Akses Menu Deteksi Obat",
-    "Unggah Foto Obat",
-    "Lihat Hasil Deteksi", // 🔥 cuma 5 langkah
-  ];
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(true); // 🔥 loading state
+  const [howToUse, setHowToUse] = useState<MediaItem[]>([]);
+  const [products, setProducts] = useState<MediaItem[]>([]);
+  const [loadingHowToUse, setLoadingHowToUse] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
@@ -100,40 +93,59 @@ const Home = () => {
     };
   }, []);
 
-  // ===== FETCH PRODUCTS FROM BACKEND =====
+  // ===== GENERIC FETCH FUNCTION =====
+  const fetchData = async (
+    endpoint: string,
+    setter: (data: MediaItem[]) => void,
+    loaderSetter: (val: boolean) => void
+  ) => {
+    try {
+      const res = await fetch(`http://localhost:5000/api/${endpoint}`);
+      let data: MediaItem[] = await res.json();
+
+      data = data.filter((item) => item.name !== ".emptyFolderPlaceholder");
+      setter(data);
+    } catch (err) {
+      console.error(`Failed to fetch ${endpoint}`, err);
+    } finally {
+      loaderSetter(false);
+    }
+  };
+
+  // ===== FETCH DATA =====
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/products");
-        let data: Product[] = await res.json();
-
-        // 🔥 Filter produk biar gak ada .emptyFolderPlaceholder
-        data = data.filter((item) => item.name !== ".emptyFolderPlaceholder");
-
-        setProducts(data);
-      } catch (err) {
-        console.error("Failed to fetch products", err);
-      } finally {
-        setLoadingProducts(false); // 🔥 stop loading
-      }
-    };
-
-    fetchProducts();
+    fetchData("how-to-use", setHowToUse, setLoadingHowToUse);
+    fetchData("products", setProducts, setLoadingProducts);
   }, []);
 
+  // ===== Custom Titles for Steps & Products =====
+  const stepTitles = [
+    "Home",
+    "VISMED Talks",
+    "Find Your VISMED",
+    "Medicine Information",
+    "Reminder",
+  ];
+
+  const productTitles = [
+    "Tampak Depan",
+    "Tampak Atas",
+    "Tampak Samping",
+    "Tampak Belakang",
+    "Tampak Bawah",
+  ];
+
   const renderHorizontalList = (
-    items: Product[] | string[],
+    items: MediaItem[],
     titlePrefix: string,
     ref: React.RefObject<HTMLDivElement | null>,
     showLeftArrow: boolean,
     showRightArrow: boolean,
     setShowLeftArrow: (val: boolean) => void,
     setShowRightArrow: (val: boolean) => void,
-    isLoading: boolean = false,
-    titleFormatter?: (index: number, item: Product | string) => string
+    isLoading: boolean = false
   ) => (
     <Flex mt={4} position="relative" align="center" minH="340px">
-      {/* Left Arrow */}
       {showLeftArrow && !isLoading && (
         <IconButton
           aria-label="Scroll Left"
@@ -152,7 +164,6 @@ const Home = () => {
         </IconButton>
       )}
 
-      {/* Loader or Items */}
       <Flex
         ref={ref}
         gap={4}
@@ -184,30 +195,32 @@ const Home = () => {
             ))}
           </Flex>
         ) : (
-          items.map((item, index) => (
-            <Box
-              key={index}
-              data-step-card
-              minW={{ base: "100%", md: "30%" }}
-              maxW={{ base: "100%", md: "30%" }}
-              flexShrink={0}
-              bg="#445775"
-              boxShadow="md"
-              borderRadius="md"
-              p={4}
-              borderLeft="5px solid white"
-              minH="320px"
-            >
-              <Heading fontSize="lg" color="white" mb={2}>
-                {titleFormatter
-                  ? titleFormatter(index, item)
-                  : `${titlePrefix} ${index + 1}`}
-              </Heading>
-              {typeof item === "string" ? (
-                <Text fontSize="sm" color="white">
-                  {item}
-                </Text>
-              ) : (
+          items.map((item, index) => {
+            let titleText = `${titlePrefix} ${index + 1}`;
+
+            if (titlePrefix === "Step" && stepTitles[index]) {
+              titleText = stepTitles[index];
+            } else if (titlePrefix === "Product" && productTitles[index]) {
+              titleText = productTitles[index];
+            }
+
+            return (
+              <Box
+                key={index}
+                data-step-card
+                minW={{ base: "100%", md: "30%" }}
+                maxW={{ base: "100%", md: "30%" }}
+                flexShrink={0}
+                bg="#445775"
+                boxShadow="md"
+                borderRadius="md"
+                p={4}
+                borderLeft="5px solid white"
+                minH="320px"
+              >
+                <Heading fontSize="lg" color="white" mb={2}>
+                  {titleText}
+                </Heading>
                 <Box textAlign="center">
                   <img
                     src={item.url}
@@ -219,17 +232,13 @@ const Home = () => {
                       borderRadius: "8px",
                     }}
                   />
-                  <Text fontSize="sm" color="white" mt={2}>
-                    {item.name}
-                  </Text>
                 </Box>
-              )}
-            </Box>
-          ))
+              </Box>
+            );
+          })
         )}
       </Flex>
 
-      {/* Right Arrow */}
       {showRightArrow && !isLoading && (
         <IconButton
           aria-label="Scroll Right"
@@ -258,7 +267,6 @@ const Home = () => {
         bg="#242424"
         color="white"
       >
-        {/* Judul Halaman */}
         <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
           Selamat Datang di Vision Medicine!
         </Heading>
@@ -266,7 +274,7 @@ const Home = () => {
           Deteksi Obat Kini Lebih Mudah
         </Text>
 
-        {/* Bagian 1 */}
+        {/* How to Use */}
         <Box
           mt={8}
           bg="rgba(255,255,255,0.09)"
@@ -280,32 +288,21 @@ const Home = () => {
             color="orange.400"
             fontWeight="bold"
           >
-            How to Use
+            How to Use ?
           </Heading>
           {renderHorizontalList(
-            steps,
+            howToUse,
             "Step",
             scrollRef1,
             showLeftArrow1,
             showRightArrow1,
             setShowLeftArrow1,
             setShowRightArrow1,
-            false,
-            // 🔥 Custom title sesuai permintaan
-            (i) =>
-              i === 0
-                ? "Home"
-                : i === 1
-                ? "VISMED Talks"
-                : i === 2
-                ? "Find Your VISMED"
-                : i === 3
-                ? "Medicine Information"
-                : "Reminder"
+            loadingHowToUse
           )}
         </Box>
 
-        {/* Kotak Scan */}
+        {/* Live Stream Box */}
         <Box
           mt={8}
           bg="rgba(255,255,255,0.9)"
@@ -325,7 +322,7 @@ const Home = () => {
           </Heading>
         </Box>
 
-        {/* Bagian 2 */}
+        {/* Our Product */}
         <Box
           mt={8}
           bg="rgba(255,255,255,0.09)"
@@ -352,40 +349,6 @@ const Home = () => {
             loadingProducts
           )}
         </Box>
-
-        {/* Bagian Quote */}
-        <Flex
-          mt={12}
-          p={1}
-          bg="#242424"
-          borderRadius="md"
-          align="stretch"
-          boxShadow="lg"
-        >
-          <Box
-            w={{ base: "80px", md: "20px" }}
-            bg="#445775"
-            borderRadius="full"
-            mr={4}
-          />
-          <Box pr={{ base: 4, md: 8 }} maxW="1400px">
-            <Text fontSize={{ base: "sm", md: "md" }} lineHeight="tall">
-              "Kami percaya bahwa teknologi seharusnya bisa diakses dan memberi
-              manfaat untuk semua. Dengan Vision Medicine, kami membawa harapan
-              baru bagi saudara saudara kita yang membutuhkan akses informasi
-              obat dengan cara yang lebih inklusif."
-            </Text>
-            <Text
-              mt={3}
-              fontWeight="bold"
-              fontStyle="italic"
-              transform="skewX(-20deg)"
-              fontSize={{ base: "xs", md: "sm" }}
-            >
-              ---- Member of VISMED ----
-            </Text>
-          </Box>
-        </Flex>
       </Box>
     </PageTransition>
   );

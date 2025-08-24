@@ -15,3 +15,5 @@ export const supabase = createClient(url, key, {
 export const audioBucket = process.env.SUPABASE_AUDIO_BUCKET || "audio";
 export const productsBucket =
   process.env.SUPABASE_PRODUCTS_BUCKET || "products";
+export const howToUseBucket =
+  process.env.SUPABASE_HOWTOUSE_BUCKET || "how-to-use"; // ✅ NEW

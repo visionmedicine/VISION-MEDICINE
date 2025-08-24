@@ -7,7 +7,8 @@ import chatRoutes from "./routes/chat.js";
 import directionRoutes from "./routes/direction.js";
 import mapsRoutes from "./routes/maps.js";
 import medicinesRoutes from "./routes/medicines.js";
-import productsRoutes from "./routes/products.js"; // NEW
+import productsRoutes from "./routes/products.js";
+import howToUseRoutes from "./routes/how-to-use.js"; // ✅ NEW
 
 const app = express();
 
@@ -24,7 +25,8 @@ app.use("/api/chat", chatRoutes);
 app.use("/api/direction", directionRoutes);
 app.use("/api/maps", mapsRoutes);
 app.use("/api/medicines", medicinesRoutes);
-app.use("/api/products", productsRoutes); // NEW
+app.use("/api/products", productsRoutes);
+app.use("/api/how-to-use", howToUseRoutes); // ✅ NEW
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
