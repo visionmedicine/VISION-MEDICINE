@@ -37,6 +37,7 @@ const Home = () => {
   const [showRightArrow2, setShowRightArrow2] = useState(true);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const hoverScale = useBreakpointValue({ base: 1.1, md: 1.4 }); // mobile scale smaller
 
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -118,13 +119,12 @@ const Home = () => {
     fetchData("products", setProducts, setLoadingProducts);
   }, []);
 
-  // ===== Custom Titles for Steps & Products =====
   const stepTitles = [
-    "Home",
-    "VISMED Talks",
-    "Find Your VISMED",
-    "Medicine Information",
-    "Reminder",
+    "Home Page",
+    "VISMED Talks Page",
+    "Find Your VISMED Page",
+    "Medicine Information Page",
+    "Reminder Page",
   ];
 
   const productTitles = [
@@ -221,7 +221,16 @@ const Home = () => {
                 <Heading fontSize="lg" color="white" mb={2}>
                   {titleText}
                 </Heading>
-                <Box textAlign="center">
+                {/* Kotak image dengan efek hover */}
+                <Box
+                  textAlign="center"
+                  overflow="hidden"
+                  borderRadius="8px"
+                  transition="transform 0.3s ease"
+                  _hover={{
+                    transform: `scale(${hoverScale})`,
+                  }}
+                >
                   <img
                     src={item.url}
                     alt={item.name}
@@ -318,7 +327,7 @@ const Home = () => {
           }}
         >
           <Heading fontSize={{ base: "17px", md: "2xl" }}>
-            ===== Live Stream Detection =====
+            ===📸 Live Stream Detection 📸===
           </Heading>
         </Box>
 

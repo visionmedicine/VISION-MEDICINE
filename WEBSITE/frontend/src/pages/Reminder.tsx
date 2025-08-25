@@ -1,3 +1,4 @@
+// src/pages/Reminder.tsx
 import { useState, useRef, useEffect } from "react";
 import {
   Box,
@@ -10,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { FiClock, FiPlus, FiTrash2 } from "react-icons/fi";
 import Select from "react-select";
-import PageTransition from "@/components/layouts/PageTransition"; // <- added
+import PageTransition from "@/components/layouts/PageTransition";
 
 type ReminderRow = {
   medicine: string;
@@ -20,18 +21,14 @@ type ReminderRow = {
   isSet?: boolean;
 };
 
-const medicines = [
-  "Paracetamol",
-  "Amoxicillin",
-  "Ibuprofen",
-  "Vitamin C",
-  "Cefixime",
-  "Metformin",
-  "Simvastatin",
-  "Omeprazole",
-] as const;
-
-const medicineOptions = medicines.map((m) => ({ value: m, label: m }));
+interface Medicine {
+  name: string;
+  kandungan: string;
+  indikasi: string;
+  efekSamping: string;
+  dosis: string;
+  golongan: string;
+}
 
 const customSelectStyles = {
   control: (provided: any, state: any) => ({
@@ -42,11 +39,15 @@ const customSelectStyles = {
     borderColor: "#E2E8F0",
     minHeight: "38px",
     height: "38px",
-    fontSize: "16px", // match with inputs
+    fontSize: "16px",
     boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none",
     "&:hover": { borderColor: "#3182CE" },
   }),
-  singleValue: (provided: any) => ({ ...provided, color: "black", fontSize: "16px" }),
+  singleValue: (provided: any) => ({
+    ...provided,
+    color: "black",
+    fontSize: "16px",
+  }),
   menu: (provided: any) => ({
     ...provided,
     backgroundColor: "white",
@@ -62,8 +63,16 @@ const customSelectStyles = {
     fontSize: "16px",
     "&:hover": { backgroundColor: "#ffe0a3" },
   }),
-  placeholder: (provided: any) => ({ ...provided, color: "gray", fontSize: "16px" }),
-  input: (provided: any) => ({ ...provided, color: "black", fontSize: "16px" }),
+  placeholder: (provided: any) => ({
+    ...provided,
+    color: "gray",
+    fontSize: "16px",
+  }),
+  input: (provided: any) => ({
+    ...provided,
+    color: "black",
+    fontSize: "16px",
+  }),
 };
 
 const formatDateWithMonthName = (value: string) => {
@@ -91,6 +100,7 @@ const Reminder = () => {
   const [reminders, setReminders] = useState<ReminderRow[]>([
     { medicine: "", date: "", hour: "", minute: "", isSet: false },
   ]);
+  const [medicines, setMedicines] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -99,6 +109,26 @@ const Reminder = () => {
       containerRef.current.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, []);
+
+  // Fetch daftar obat dari backend
+  useEffect(() => {
+    const fetchMedicines = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/medicines");
+        const data: Medicine[] = await res.json();
+        const sorted = data
+          .filter((m) => !!m?.name)
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setMedicines(sorted.map((m) => m.name));
+      } catch (error) {
+        console.error("❌ Error fetching medicines:", error);
+        setMedicines([]);
+      }
+    };
+    fetchMedicines();
+  }, []);
+
+  const medicineOptions = medicines.map((m) => ({ value: m, label: m }));
 
   const handleChange = (
     index: number,
@@ -238,7 +268,10 @@ const Reminder = () => {
                     options={medicineOptions}
                     value={
                       reminder.medicine
-                        ? { value: reminder.medicine, label: reminder.medicine }
+                        ? {
+                            value: reminder.medicine,
+                            label: reminder.medicine,
+                          }
                         : null
                     }
                     onChange={(selected) =>
