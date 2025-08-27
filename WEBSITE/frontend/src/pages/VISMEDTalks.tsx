@@ -10,7 +10,7 @@ import {
   HStack,
   Spinner,
 } from "@chakra-ui/react";
-import { FiMic, FiSend } from "react-icons/fi";
+import { FiMic, FiSend, FiPlus, FiTrash2 } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
 
 // ==== Tambahan Type untuk Web Speech API ====
@@ -47,9 +47,27 @@ const VISMEDTalks = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // ⬅️ popup state
+
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null); // ⬅️ ref menu
   const shouldAutoScroll = useRef(true);
+
+  // Load chat history dari localStorage
+  useEffect(() => {
+    const savedMessages = localStorage.getItem("vismed_messages");
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  // Simpan chat history ke localStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("vismed_messages", JSON.stringify(messages));
+    }
+  }, [messages]);
 
   // Scroll otomatis ke bawah
   const checkIfAtBottom = () => {
@@ -139,6 +157,27 @@ const VISMEDTalks = () => {
       recognitionRef.current.start();
     }
   };
+
+  const handleClearChat = () => {
+    setMessages([]);
+    localStorage.removeItem("vismed_messages");
+    setIsMenuOpen(false);
+  };
+
+  // Close menu kalau klik di luar
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMenuOpen &&
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMenuOpen]);
 
   return (
     <PageTransition>
@@ -230,8 +269,56 @@ const VISMEDTalks = () => {
           bg="#2f2f2f"
           position="relative"
           borderRadius="2xl"
-          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
+          mb={{ base: 3, md: 5 }}
         >
+          {/* Wrapper untuk tombol + dan popup */}
+          <Box ref={menuRef}>
+            {/* Plus button */}
+            <IconButton
+              aria-label="Menu"
+              size={{ base: "sm", md: "md" }}
+              variant="ghost"
+              colorScheme="green"
+              position="absolute"
+              left={{ base: "6px", md: "10px" }}
+              top="50%"
+              transform="translateY(-50%)"
+              zIndex="2"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+            >
+              <FiPlus />
+            </IconButton>
+
+            {/* Popup menu */}
+            {isMenuOpen && (
+              <Box
+                position="absolute"
+                bottom="50px"
+                left="10px"
+                bg="white"
+                color="black"
+                p={2}
+                borderRadius="md"
+                boxShadow="lg"
+                zIndex="10"
+              >
+                <Flex
+                  align="center"
+                  gap={2}
+                  cursor="pointer"
+                  _hover={{ bg: "gray.100" }}
+                  px={2}
+                  py={1}
+                  borderRadius="md"
+                  onClick={handleClearChat}
+                >
+                  <FiTrash2 />
+                  <Text fontSize="sm">Clear Chat</Text>
+                </Flex>
+              </Box>
+            )}
+          </Box>
+
           {/* Mic button */}
           <IconButton
             aria-label="Mic"
@@ -239,7 +326,7 @@ const VISMEDTalks = () => {
             variant="ghost"
             colorScheme={isListening ? "red" : "blue"}
             position="absolute"
-            left={{ base: "6px", md: "10px" }}
+            left={{ base: "42px", md: "50px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
@@ -256,7 +343,7 @@ const VISMEDTalks = () => {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            pl={{ base: "35px", md: "40px" }}
+            pl={{ base: "70px", md: "80px" }}
             pr={{ base: "35px", md: "40px" }}
             color="black"
             bg="white"

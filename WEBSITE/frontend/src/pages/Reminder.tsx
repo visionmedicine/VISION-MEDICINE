@@ -97,12 +97,30 @@ const formatDateWithMonthName = (value: string) => {
 };
 
 const Reminder = () => {
-  const [reminders, setReminders] = useState<ReminderRow[]>([
-    { medicine: "", date: "", hour: "", minute: "", isSet: false },
-  ]);
+  const [reminders, setReminders] = useState<ReminderRow[]>([]);
   const [medicines, setMedicines] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
+
+  // Load reminders dari localStorage saat pertama kali render
+  useEffect(() => {
+    const savedReminders = localStorage.getItem("reminders");
+    if (savedReminders) {
+      setReminders(JSON.parse(savedReminders));
+    } else {
+      // default kalo belum ada data
+      setReminders([
+        { medicine: "", date: "", hour: "", minute: "", isSet: false },
+      ]);
+    }
+  }, []);
+
+  // Save reminders ke localStorage tiap kali ada perubahan
+  useEffect(() => {
+    if (reminders.length > 0) {
+      localStorage.setItem("reminders", JSON.stringify(reminders));
+    }
+  }, [reminders]);
 
   useEffect(() => {
     if (containerRef.current) {
