@@ -191,7 +191,8 @@ const MedicineInformation = () => {
             <Flex
               justify="center"
               align="center"
-              h="full"
+              w="100%"
+              minH="calc(100dvh - 160px)" // tinggi header + input area
               gap={2}
               role="status"
               aria-label="Memuat data obat"
@@ -208,89 +209,93 @@ const MedicineInformation = () => {
                 />
               ))}
             </Flex>
-          ) : (
+          ) : filteredMedicines.length > 0 ? (
             <SimpleGrid columns={{ base: 1, md: 2 }} gap={4}>
-              {filteredMedicines.length > 0 ? (
-                filteredMedicines.map((med, index) => {
-                  const column = index % 2 === 0 ? "left" : "right";
-                  const keyId = `${med.name}-${index}`;
-                  const isOpen =
-                    column === "left"
-                      ? openStatesLeft[keyId]
-                      : openStatesRight[keyId];
+              {filteredMedicines.map((med, index) => {
+                const column = index % 2 === 0 ? "left" : "right";
+                const keyId = `${med.name}-${index}`;
+                const isOpen =
+                  column === "left"
+                    ? openStatesLeft[keyId]
+                    : openStatesRight[keyId];
 
-                  return (
-                    <Box
-                      key={keyId}
-                      bg="#445775"
-                      color="white"
-                      borderRadius="2xl"
-                      boxShadow="md"
-                      display="flex"
-                      flexDirection="column"
-                      transition="all 0.2s"
-                      _hover={{
-                        boxShadow: "lg",
-                        transform: "translateY(-2px)",
-                      }}
+                return (
+                  <Box
+                    key={keyId}
+                    bg="#445775"
+                    color="white"
+                    borderRadius="2xl"
+                    boxShadow="md"
+                    display="flex"
+                    flexDirection="column"
+                    transition="all 0.2s"
+                    _hover={{
+                      boxShadow: "lg",
+                      transform: "translateY(-2px)",
+                    }}
+                  >
+                    <HStack
+                      px={{ base: 3, md: 4 }}
+                      py={{ base: 2, md: 3 }}
+                      cursor="pointer"
+                      justify="space-between"
+                      borderBottom={isOpen ? "1px solid" : "none"}
+                      borderColor="gray.600"
+                      onClick={() => toggleDropdown(keyId, column)}
                     >
-                      <HStack
+                      <Text
+                        fontWeight="bold"
+                        fontSize={{ base: "sm", md: "md" }}
+                      >
+                        {med.name}
+                      </Text>
+                      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                    </HStack>
+
+                    <Collapse in={isOpen} animateOpacity>
+                      <Box
                         px={{ base: 3, md: 4 }}
                         py={{ base: 2, md: 3 }}
-                        cursor="pointer"
-                        justify="space-between"
-                        borderBottom={isOpen ? "1px solid" : "none"}
-                        borderColor="gray.600"
-                        onClick={() => toggleDropdown(keyId, column)}
+                        bg="gray.700"
+                        borderRadius="0 0 2xl 2xl"
+                        fontSize={{ base: "sm", md: "md" }}
                       >
-                        <Text
-                          fontWeight="bold"
-                          fontSize={{ base: "sm", md: "md" }}
-                        >
-                          {med.name}
+                        <Text mb={2}>
+                          <strong>Kandungan:</strong> {med.kandungan}
                         </Text>
-                        {isOpen ? <FaChevronUp /> : <FaChevronDown />}
-                      </HStack>
-
-                      <Collapse in={isOpen} animateOpacity>
-                        <Box
-                          px={{ base: 3, md: 4 }}
-                          py={{ base: 2, md: 3 }}
-                          bg="gray.700"
-                          borderRadius="0 0 2xl 2xl"
-                          fontSize={{ base: "sm", md: "md" }}
-                        >
-                          <Text mb={2}>
-                            <strong>Kandungan:</strong> {med.kandungan}
-                          </Text>
-                          <Text mb={2}>
-                            <strong>Indikasi:</strong> {med.indikasi}
-                          </Text>
-                          <Text mb={2}>
-                            <strong>Dosis:</strong> {med.dosis}
-                          </Text>
-                          <Text mb={2}>
-                            <strong>Efek Samping:</strong> {med.efekSamping}
-                          </Text>
-                          <Text>
-                            <strong>Golongan:</strong> {med.golongan}
-                          </Text>
-                        </Box>
-                      </Collapse>
-                    </Box>
-                  );
-                })
-              ) : (
-                <Text
-                  color="white"
-                  textAlign="center"
-                  fontSize={{ base: "md", md: "lg" }}
-                  gridColumn="span 2"
-                >
-                  Tidak ada obat ditemukan.
-                </Text>
-              )}
+                        <Text mb={2}>
+                          <strong>Indikasi:</strong> {med.indikasi}
+                        </Text>
+                        <Text mb={2}>
+                          <strong>Dosis:</strong> {med.dosis}
+                        </Text>
+                        <Text mb={2}>
+                          <strong>Efek Samping:</strong> {med.efekSamping}
+                        </Text>
+                        <Text>
+                          <strong>Golongan:</strong> {med.golongan}
+                        </Text>
+                      </Box>
+                    </Collapse>
+                  </Box>
+                );
+              })}
             </SimpleGrid>
+          ) : (
+            <Flex
+              justify="center"
+              align="center"
+              w="100%"
+              minH="calc(100dvh - 160px)"
+            >
+              <Text
+                color="white"
+                textAlign="center"
+                fontSize={{ base: "md", md: "lg" }}
+              >
+                Tidak ada obat ditemukan.
+              </Text>
+            </Flex>
           )}
         </Box>
 
