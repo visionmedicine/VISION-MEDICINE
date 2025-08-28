@@ -316,7 +316,7 @@ const VISMEDTalks = () => {
                   align="center"
                   gap={2}
                   cursor="pointer"
-                  _hover={{ bg: "gray.100" }}
+                  _hover={{ bg: "gray.200" }}
                   px={3}
                   py={2}
                   borderRadius="full" // ⬅️ bikin tombol super bulat
