@@ -95,10 +95,12 @@ const FindYourVISMED = () => {
     <PageTransition>
       <Flex
         direction="column"
-        h="100vh"
+        minH="100dvh" // selalu setinggi viewport
+        maxH="100dvh" // jangan lebih dari viewport
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
+        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
       >
         {/* Header */}
         <Flex
