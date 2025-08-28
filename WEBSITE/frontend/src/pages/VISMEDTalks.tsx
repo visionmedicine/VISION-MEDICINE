@@ -269,7 +269,7 @@ const VISMEDTalks = () => {
           borderColor="gray.600"
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
-          position="fixed" // 🔥 bikin nempel bawah container
+          position="sticky" // 🔥 bikin nempel bawah container
           bottom="0"
           borderRadius="2xl"
           zIndex={100} // biar selalu di atas chat scroll
@@ -344,10 +344,7 @@ const VISMEDTalks = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault(); // ⬅️ cegah auto blur
-                handleSend();
-              }
+              if (e.key === "Enter") handleSend();
             }}
             pl={{ base: "70px", md: "80px" }}
             pr={{ base: "35px", md: "40px" }}
