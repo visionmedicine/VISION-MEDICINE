@@ -48,6 +48,7 @@ const MedicineInformation = () => {
   const [input, setInput] = useState("");
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
+  const [listening, setListening] = useState(false);
   const [openStatesLeft, setOpenStatesLeft] = useState<Record<string, boolean>>(
     {}
   );
@@ -55,6 +56,54 @@ const MedicineInformation = () => {
     Record<string, boolean>
   >({});
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // Init Web Speech Recognition
+  useEffect(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "id-ID"; // bahasa Indonesia
+      recognition.continuous = false;
+      recognition.interimResults = false;
+
+      recognition.onstart = () => {
+        setListening(true);
+      };
+
+      recognition.onend = () => {
+        setListening(false);
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("❌ Speech recognition error:", event.error);
+        setListening(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, []);
+
+  const handleMicClick = () => {
+    if (!recognitionRef.current) {
+      alert("Speech Recognition tidak didukung di browser ini 😢");
+      return;
+    }
+
+    if (listening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+  };
 
   // Fetch dari backend
   useEffect(() => {
@@ -101,12 +150,12 @@ const MedicineInformation = () => {
     <PageTransition>
       <Flex
         direction="column"
-        minH="100dvh" // selalu setinggi viewport
-        maxH="100dvh" // jangan lebih dari viewport
+        minH="100dvh"
+        maxH="100dvh"
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
-        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
+        overflow="hidden"
       >
         {/* Header */}
         <Flex
@@ -251,21 +300,22 @@ const MedicineInformation = () => {
           borderColor="gray.600"
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
-          position="sticky" // 🔥 bikin nempel bawah container
+          position="sticky"
           bottom="0"
           borderRadius="2xl"
-          zIndex={100} // biar selalu di atas chat scroll
+          zIndex={100}
         >
           <IconButton
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme="blue"
+            colorScheme={listening ? "red" : "blue"}
             position="absolute"
             left={{ base: "6px", md: "10px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
+            onClick={handleMicClick}
           >
             <FaMicrophone size={16} />
           </IconButton>
