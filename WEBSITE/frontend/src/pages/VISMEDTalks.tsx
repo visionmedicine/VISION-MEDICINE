@@ -183,7 +183,7 @@ const VISMEDTalks = () => {
     <PageTransition>
       <Flex
         direction="column"
-        minH="100dvh" // ✅ dynamic viewport height
+        h="100vh"
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
