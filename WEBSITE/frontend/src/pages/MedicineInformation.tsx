@@ -321,6 +321,10 @@ const MedicineInformation = () => {
             transform="translateY(-50%)"
             zIndex="1"
             onClick={handleMicClick}
+            bg="transparent"
+            _hover={{ bg: "transparent" }}
+            _active={{ bg: "transparent" }}
+            _focus={{ boxShadow: "none", bg: "transparent" }}
           >
             <FaMicrophone size={16} />
           </IconButton>
@@ -347,6 +351,10 @@ const MedicineInformation = () => {
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
+            bg="transparent"
+            _hover={{ bg: "transparent" }}
+            _active={{ bg: "transparent" }}
+            _focus={{ boxShadow: "none", bg: "transparent" }}
           >
             <FaSearch size={18} />
           </IconButton>
@@ -362,6 +370,10 @@ const MedicineInformation = () => {
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
+            bg="transparent"
+            _hover={{ bg: "transparent" }}
+            _active={{ bg: "transparent" }}
+            _focus={{ boxShadow: "none", bg: "transparent" }}
           >
             <FaTimes size={18} />
           </IconButton>

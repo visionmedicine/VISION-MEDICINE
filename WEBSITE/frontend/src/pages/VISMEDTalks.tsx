@@ -292,6 +292,10 @@ const VISMEDTalks = () => {
               transform="translateY(-50%)"
               zIndex="2"
               onClick={() => setIsMenuOpen((prev) => !prev)}
+              bg="transparent"
+              _hover={{ bg: "transparent" }}
+              _active={{ bg: "transparent" }}
+              _focus={{ boxShadow: "none", bg: "transparent" }}
             >
               <FiPlus />
             </IconButton>
@@ -304,7 +308,7 @@ const VISMEDTalks = () => {
                 bg="white"
                 color="black"
                 p={2}
-                borderRadius="md"
+                borderRadius="full"
                 boxShadow="lg"
                 zIndex="10"
               >
@@ -313,9 +317,9 @@ const VISMEDTalks = () => {
                   gap={2}
                   cursor="pointer"
                   _hover={{ bg: "gray.100" }}
-                  px={2}
-                  py={1}
-                  borderRadius="md"
+                  px={3}
+                  py={2}
+                  borderRadius="full" // ⬅️ bikin tombol super bulat
                   onClick={handleClearChat}
                 >
                   <FiTrash2 />
@@ -327,7 +331,7 @@ const VISMEDTalks = () => {
 
           {/* Mic button */}
           <IconButton
-            type="button" // ⬅️ fix
+            type="button"
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
@@ -338,6 +342,10 @@ const VISMEDTalks = () => {
             transform="translateY(-50%)"
             zIndex="1"
             onClick={handleMicClick}
+            bg="transparent"
+            _hover={{ bg: "transparent" }}
+            _active={{ bg: "transparent" }}
+            _focus={{ boxShadow: "none", bg: "transparent" }}
           >
             <FiMic />
           </IconButton>
@@ -361,7 +369,7 @@ const VISMEDTalks = () => {
 
           {/* Send button */}
           <IconButton
-            type="button" // ⬅️ fix
+            type="button"
             aria-label="Send"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
@@ -372,6 +380,10 @@ const VISMEDTalks = () => {
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
+            bg="transparent"
+            _hover={{ bg: "transparent" }}
+            _active={{ bg: "transparent" }}
+            _focus={{ boxShadow: "none", bg: "transparent" }}
           >
             <FiSend />
           </IconButton>
