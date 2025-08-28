@@ -306,7 +306,7 @@ const MedicineInformation = () => {
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
           position="sticky"
-          bottom="0"
+          bottom={{ base: "9px", md: "12px" }}
           borderRadius="2xl"
           zIndex={100}
         >
