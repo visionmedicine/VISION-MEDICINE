@@ -101,10 +101,12 @@ const MedicineInformation = () => {
     <PageTransition>
       <Flex
         direction="column"
-        h="100vh"
+        minH="100dvh" // selalu setinggi viewport
+        maxH="100dvh" // jangan lebih dari viewport
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
+        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
       >
         {/* Header */}
         <Flex
@@ -249,10 +251,10 @@ const MedicineInformation = () => {
           borderColor="gray.600"
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
+          position="sticky" // 🔥 bikin nempel bawah container
+          bottom="0"
           borderRadius="2xl"
-          boxShadow="md"
-          position="relative"
-          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
+          zIndex={100} // biar selalu di atas chat scroll
         >
           <IconButton
             aria-label="Mic"
