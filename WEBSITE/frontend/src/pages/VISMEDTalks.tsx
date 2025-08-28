@@ -47,12 +47,13 @@ const VISMEDTalks = () => {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // ⬅️ popup state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null); // ⬅️ ref menu
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScroll = useRef(true);
+  const inputRef = useRef<HTMLInputElement | null>(null); // ⬅️ fokus input
 
   // Load chat history dari localStorage
   useEffect(() => {
@@ -90,7 +91,7 @@ const VISMEDTalks = () => {
 
     if (SpeechRecognition) {
       const recognition: SpeechRecognition = new SpeechRecognition();
-      recognition.lang = "id-ID"; // Bahasa Indonesia
+      recognition.lang = "id-ID";
       recognition.continuous = false;
       recognition.interimResults = false;
 
@@ -120,6 +121,9 @@ const VISMEDTalks = () => {
     const userMessage = input.trim();
     setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
     setInput("");
+
+    // ⬅️ jaga fokus biar keyboard gak nutup
+    inputRef.current?.focus();
 
     setIsTyping(true);
 
@@ -183,12 +187,12 @@ const VISMEDTalks = () => {
     <PageTransition>
       <Flex
         direction="column"
-        minH="100dvh" // selalu setinggi viewport
-        maxH="100dvh" // jangan lebih dari viewport
+        minH="100dvh"
+        maxH="100dvh"
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
-        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
+        overflow="hidden"
       >
         {/* Header */}
         <Flex
@@ -269,15 +273,15 @@ const VISMEDTalks = () => {
           borderColor="gray.600"
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
-          position="sticky" // 🔥 bikin nempel bawah container
+          position="sticky"
           bottom="0"
           borderRadius="2xl"
-          zIndex={100} // biar selalu di atas chat scroll
+          zIndex={100}
         >
           {/* Wrapper untuk tombol + dan popup */}
           <Box ref={menuRef}>
-            {/* Plus button */}
             <IconButton
+              type="button" // ⬅️ fix biar gak blur input
               aria-label="Menu"
               size={{ base: "sm", md: "md" }}
               variant="ghost"
@@ -292,7 +296,6 @@ const VISMEDTalks = () => {
               <FiPlus />
             </IconButton>
 
-            {/* Popup menu */}
             {isMenuOpen && (
               <Box
                 position="absolute"
@@ -324,6 +327,7 @@ const VISMEDTalks = () => {
 
           {/* Mic button */}
           <IconButton
+            type="button" // ⬅️ fix
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
@@ -340,6 +344,7 @@ const VISMEDTalks = () => {
 
           {/* Input */}
           <Input
+            ref={inputRef} // ⬅️ biar bisa di-focus lagi
             placeholder="Tulis pesan..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -356,6 +361,7 @@ const VISMEDTalks = () => {
 
           {/* Send button */}
           <IconButton
+            type="button" // ⬅️ fix
             aria-label="Send"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
