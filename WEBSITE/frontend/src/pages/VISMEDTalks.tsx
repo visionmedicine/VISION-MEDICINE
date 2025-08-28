@@ -183,10 +183,12 @@ const VISMEDTalks = () => {
     <PageTransition>
       <Flex
         direction="column"
-        minH="100dvh" // ✅ dynamic viewport height
+        minH="100dvh" // selalu setinggi viewport
+        maxH="100dvh" // jangan lebih dari viewport
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
+        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
       >
         {/* Header */}
         <Flex
@@ -267,9 +269,10 @@ const VISMEDTalks = () => {
           borderColor="gray.600"
           p={{ base: 2, md: 3 }}
           bg="#2f2f2f"
-          position="relative"
+          position="sticky" // 🔥 bikin nempel bawah container
+          bottom="0"
           borderRadius="2xl"
-          mb={{ base: 3, md: 5 }}
+          zIndex={5} // biar selalu di atas chat scroll
         >
           {/* Wrapper untuk tombol + dan popup */}
           <Box ref={menuRef}>
