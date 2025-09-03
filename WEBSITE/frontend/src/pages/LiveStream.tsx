@@ -58,14 +58,42 @@ export default function LiveStream() {
 
   return (
     <PageTransition>
-      <Box p={6} pt={3}>
-        <Flex direction="column" align="center" gap={4}>
-          <Heading size="2xl" mb={4}>
-            Live Stream Detection
-          </Heading>
+      <Box p={6} pt={3} minH="100vh">
+        {/* Heading selalu di atas */}
+        <Flex direction="column" align="center" mb={6}>
+          <Heading size="2xl">Live Stream Detection</Heading>
+        </Flex>
 
-          {/* Stream box */}
-          {isConnected && (
+        {!isConnected ? (
+          // ⬇️ Tampilan saat belum connect (hanya tombol & teks di tengah layar)
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            minH="70vh"
+            textAlign="center"
+            gap={4}
+          >
+            <Button
+              size="lg"
+              colorScheme="orange"
+              borderRadius="full"
+              px={10}
+              py={6}
+              fontWeight="bold"
+              onClick={handleConnect}
+              shadow="md"
+            >
+              CONNECT
+            </Button>
+            <Text fontSize="sm" color="gray.400" mt={1}>
+              Klik tombol Connect untuk memulai Live Streaming 📡
+            </Text>
+          </Flex>
+        ) : (
+          // ⬇️ Tampilan setelah connect
+          <Flex direction="column" align="center" gap={4}>
+            {/* Stream box */}
             <Box
               mt={1}
               border="4px solid orange"
@@ -114,24 +142,9 @@ export default function LiveStream() {
                 </Flex>
               )}
             </Box>
-          )}
 
-          {/* Tombol Connect / Disconnect di bawah stream box */}
-          <Box mt={1}>
-            {!isConnected ? (
-              <Button
-                size="lg"
-                colorScheme="orange"
-                borderRadius="full"
-                px={10}
-                py={6}
-                fontWeight="bold"
-                onClick={handleConnect}
-                shadow="md"
-              >
-                CONNECT
-              </Button>
-            ) : (
+            {/* Tombol Disconnect */}
+            <Box mt={1}>
               <Button
                 size="lg"
                 colorScheme="red"
@@ -144,16 +157,15 @@ export default function LiveStream() {
               >
                 DISCONNECT
               </Button>
-            )}
-          </Box>
+            </Box>
 
-          {/* Caption bawah */}
-          <Text fontSize="sm" color="gray.400" mt={1} textAlign="center">
-            {isConnected
-              ? "Live Streaming diambil dari kamera yang terhubung ke VISMED Raspberry Pi 5 ‼️"
-              : "Klik tombol Connect untuk memulai Live Streaming 📡"}
-          </Text>
-        </Flex>
+            {/* Caption bawah */}
+            <Text fontSize="sm" color="gray.400" mt={1} textAlign="center">
+              Live Streaming diambil dari kamera yang terhubung ke VISMED
+              Raspberry Pi 5 ‼️
+            </Text>
+          </Flex>
+        )}
       </Box>
     </PageTransition>
   );
