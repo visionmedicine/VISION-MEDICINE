@@ -67,7 +67,7 @@ export default function LiveStream() {
           {/* Stream box */}
           {isConnected && (
             <Box
-              mt={3.5}
+              mt={1}
               border="4px solid orange"
               borderRadius="md"
               overflow="hidden"
