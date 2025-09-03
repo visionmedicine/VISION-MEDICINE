@@ -9,6 +9,7 @@ import {
 import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
 import { keyframes } from "@emotion/react";
+import { useNavigate } from "react-router-dom"; // ✅ import navigate hook
 import PageTransition from "@/components/layouts/PageTransition";
 
 type MediaItem = {
@@ -38,6 +39,8 @@ const Home = () => {
 
   const isMobile = useBreakpointValue({ base: true, md: false });
   const hoverScale = useBreakpointValue({ base: 1.1, md: 1.4 }); // mobile scale smaller
+
+  const navigate = useNavigate(); // ✅ hook router
 
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -101,7 +104,9 @@ const Home = () => {
     loaderSetter: (val: boolean) => void
   ) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/${endpoint}`);
+      const res = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/${endpoint}`
+      );
       let data: MediaItem[] = await res.json();
 
       data = data.filter((item) => item.name !== ".emptyFolderPlaceholder");
@@ -321,6 +326,7 @@ const Home = () => {
           textAlign="center"
           cursor="pointer"
           color="black"
+          onClick={() => navigate("/livestream")} // ✅ klik -> redirect
           _hover={{
             bg: "orange.500",
             color: "white",

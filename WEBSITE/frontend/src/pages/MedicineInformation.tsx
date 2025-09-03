@@ -272,9 +272,9 @@ const MedicineInformation = () => {
                         <Text mb={2}>
                           <strong>Efek Samping:</strong> {med.efekSamping}
                         </Text>
-                        <Text>
+                        {/* <Text>
                           <strong>Golongan:</strong> {med.golongan}
-                        </Text>
+                        </Text> */}
                       </Box>
                     </Collapse>
                   </Box>

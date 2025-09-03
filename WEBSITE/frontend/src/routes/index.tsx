@@ -14,6 +14,7 @@ const VISMEDTalks = lazy(() => import("@/pages/VISMEDTalks"));
 const FindYourVISMED = lazy(() => import("@/pages/FindYourVISMED"));
 const MedicineInformation = lazy(() => import("@/pages/MedicineInformation"));
 const Reminder = lazy(() => import("@/pages/Reminder"));
+const LiveStream = lazy(() => import("@/pages/LiveStream")); // ⬅️ halaman baru
 
 // Keyframes animasi titik bergelombang
 const waveDots = keyframes`
@@ -123,6 +124,14 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingScreen />}>
             <Reminder />
+          </Suspense>
+        ),
+      },
+      {
+        path: "livestream", // ⬅️ route baru
+        element: (
+          <Suspense fallback={<LoadingScreen />}>
+            <LiveStream />
           </Suspense>
         ),
       },
