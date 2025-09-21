@@ -1,159 +1,231 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Hotword + ElevenLabs Conversational AI
+Mode: One-Shot → 1 Wakeword = 1 Question = 1 Answer → End Session
+"""
+
 import os
-import signal
 import time
+import io
+import queue
+import threading
+import numpy as np
+import sounddevice as sd
 from eff_word_net.streams import SimpleMicStream
 from eff_word_net.engine import HotwordDetector
-
 from eff_word_net.audio_processing import Resnet50_Arc_loss
 
-# from eff_word_net import samples_loc
-
 from elevenlabs.client import ElevenLabs
-from elevenlabs.conversational_ai.conversation import Conversation, ConversationInitiationData
+from elevenlabs.conversational_ai.conversation import (
+    Conversation,
+    ConversationInitiationData,
+)
 from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInterface
 
-convai_active = False
+from pydub import AudioSegment
+from dotenv import load_dotenv
 
-elevenlabs = ElevenLabs()
-agent_id = os.getenv("ELEVENLABS_AGENT_ID")
+# =========================================================
+# ====== LOAD ENV FILE ====================================
+# =========================================================
+load_dotenv()
+
 api_key = os.getenv("ELEVENLABS_API_KEY")
+agent_id = os.getenv("ELEVENLABS_AGENT_ID")
 
-dynamic_vars = {
-    'user_name': 'Kak',
-    'greeting': 'Halo'
-}
+if not api_key or not agent_id:
+    raise ValueError("⚠️ API Key atau Agent ID belum diset di file .env")
+
+# =========================================================
+# ====== GLOBAL STATE =====================================
+# =========================================================
+convai_active = False
+agent_speaking = False
+last_agent_response = ""
+conversation_done = False     # trigger end setelah agent jawab sekali
+first_response_done = False   # pastikan agent cuma jawab sekali
+
+# =========================================================
+# ====== ELEVEN SETUP =====================================
+# =========================================================
+elevenlabs = ElevenLabs(api_key=api_key)
 
 config = ConversationInitiationData(
-    dynamic_variables=dynamic_vars
+    dynamic_variables={
+        "user_name": "Kak",
+        "greeting": "Halo",
+    }
 )
 
+# Hotword detector
 base_model = Resnet50_Arc_loss()
-
 eleven_hw = HotwordDetector(
     hotword="hey_eleven",
-    model = base_model,
+    model=base_model,
     reference_file=os.path.join("hotword_refs", "hey_eleven_ref.json"),
     threshold=0.7,
-    relaxation_time=2
+    relaxation_time=2,
 )
 
+# =========================================================
+# ====== CUSTOM AUDIO INTERFACE ===========================
+# =========================================================
+class ControlledAudioInterface(DefaultAudioInterface):
+    def __init__(self):
+        super().__init__()
+        self.audio_queue = queue.Queue()
+        self.thread = threading.Thread(target=self._worker, daemon=True)
+        self.thread.start()
+
+    def play_audio(self, audio_bytes: bytes):
+        self.audio_queue.put(audio_bytes)
+
+    def _worker(self):
+        global agent_speaking, conversation_done
+        while True:
+            audio_bytes = self.audio_queue.get()
+            if audio_bytes is None:
+                break
+            try:
+                agent_speaking = True
+                print("[DEBUG] Agent mulai bicara...")
+
+                segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp3")
+                normalized = segment.apply_gain(-segment.max_dBFS)
+                louder_segment = normalized + 12
+
+                samples = np.array(louder_segment.get_array_of_samples()).astype(np.float32)
+                samples /= np.iinfo(louder_segment.array_type).max
+                if louder_segment.channels == 2:
+                    samples = samples.reshape((-1, 2))
+
+                sd.play(samples, samplerate=louder_segment.frame_rate)
+                sd.wait()
+
+            except Exception as e:
+                print(f"[Audio ERROR] {e}")
+            finally:
+                agent_speaking = False
+                conversation_done = True   # mark selesai setelah agent jawab
+                print("[DEBUG] Agent selesai bicara")
+
+# =========================================================
+# ====== CALLBACKS ========================================
+# =========================================================
+def safe_agent_response(response: str):
+    global last_agent_response, first_response_done, conversation_done
+    if first_response_done:
+        print("[DEBUG] Respon tambahan diabaikan (one-shot mode).")
+        return
+    if response.strip() and response.strip() != last_agent_response.strip():
+        print(f"[Agent Txt] {response}")
+        last_agent_response = response.strip()
+        first_response_done = True
+        conversation_done = True  # langsung tandai selesai
+    else:
+        print("[DEBUG] Duplikat respon di-skip")
+
+def safe_user_transcript(transcript: str):
+    print(f"[User Txt] {transcript}")
+
+# =========================================================
+# ====== CONVERSATION CREATOR =============================
+# =========================================================
 def create_conversation():
-    """Create a new conversation instance"""
-    return Conversation(
-        # API client and agent ID.
+    conv = Conversation(
         elevenlabs,
         agent_id,
         config=config,
-
-        # Assume auth is required when API_KEY is set.
         requires_auth=bool(api_key),
-
-        # Use the default audio interface.
-        audio_interface=DefaultAudioInterface(),
-
-        # Simple callbacks that print the conversation to the console.
-        callback_agent_response=lambda response: print(f"Agent: {response}"),
-        callback_agent_response_correction=lambda original, corrected: print(f"Agent: {original} -> {corrected}"),
-        callback_user_transcript=lambda transcript: print(f"User: {transcript}"),
-        
-        # Uncomment if you want to see latency measurements.
-        # callback_latency_measurement=lambda latency: print(f"Latency: {latency}ms"),
+        audio_interface=ControlledAudioInterface(),
+        callback_agent_response=safe_agent_response,
+        callback_agent_response_correction=lambda o, c: None,
+        callback_user_transcript=safe_user_transcript,
     )
+    try:
+        conv.config.max_output_tokens = 512
+    except Exception:
+        pass
+    return conv
 
+# =========================================================
+# ====== MIC STREAM HANDLING ==============================
+# =========================================================
 def start_mic_stream():
-    """Start or restart the microphone stream"""
     global mic_stream
     try:
-        # Always create a new stream instance
         mic_stream = SimpleMicStream(
             window_length_secs=1.5,
             sliding_window_secs=0.75,
         )
         mic_stream.start_stream()
-        print("Microphone stream started")
+        print("🎙️ Microphone stream started")
     except Exception as e:
         print(f"Error starting microphone stream: {e}")
         mic_stream = None
-        time.sleep(1)  # Wait a bit before retrying
+        time.sleep(1)
 
 def stop_mic_stream():
-    """Stop the microphone stream safely"""
     global mic_stream
     try:
         if mic_stream:
-            # SimpleMicStream doesn't have a stop_stream method
-            # We'll just set it to None and recreate it next time
             mic_stream = None
-            print("Microphone stream stopped")
+            print("🛑 Microphone stream stopped")
     except Exception as e:
         print(f"Error stopping microphone stream: {e}")
 
-# Initialize microphone stream
+# =========================================================
+# ====== MAIN LOOP ========================================
+# =========================================================
 mic_stream = None
 start_mic_stream()
 
-print("Say Hey Eleven ")
+print("Say 'Hey Eleven' to wake the agent...")
+
 while True:
     if not convai_active:
         try:
-            # Make sure we have a valid mic stream
             if mic_stream is None:
                 start_mic_stream()
                 continue
-                
+
             frame = mic_stream.getFrame()
             result = eleven_hw.scoreFrame(frame)
-            if result is None:
-                #no voice activity
-                continue
-            if result["match"]:
-                print("Wakeword uttered", result["confidence"])
-                
-                # Stop the microphone stream to avoid conflicts
+            if result and result["match"]:
+                print("✅ Wakeword uttered!", result["confidence"])
+
                 stop_mic_stream()
-                
-                # Start ConvAI Session
-                print("Start ConvAI Session")
                 convai_active = True
-                
+                print("🚀 Start ConvAI Session")
+
                 try:
-                    # Create a new conversation instance
+                    # Reset state untuk sesi baru
+                    conversation_done = False
+                    first_response_done = False
+
                     conversation = create_conversation()
-                    
-                    # Start the session
                     conversation.start_session()
-                    
-                    # Set up signal handler for graceful shutdown
-                    def signal_handler(sig, frame):
-                        print("Received interrupt signal, ending session...")
-                        try:
-                            conversation.end_session()
-                        except Exception as e:
-                            print(f"Error ending session: {e}")
-                    
-                    signal.signal(signal.SIGINT, signal_handler)
-                    
-                    # Wait for session to end
-                    conversation_id = conversation.wait_for_session_end()
-                    print(f"Conversation ID: {conversation_id}")
-                    
+
+                    # Tunggu sampai agent selesai jawab sekali
+                    while not conversation_done:
+                        time.sleep(0.5)
+
+                    # End session setelah jawaban pertama selesai
+                    conversation.end_session()
+                    print("✅ One-shot Q&A selesai, sesi ditutup.")
+
                 except Exception as e:
                     print(f"Error during conversation: {e}")
                 finally:
-                    # Cleanup
                     convai_active = False
-                    print("Conversation ended, cleaning up...")
-                    
-                    # Give some time for cleanup
-                    time.sleep(1)
-                    
-                    # Restart microphone stream
+                    print("🧹 Conversation ended, back to standby...")
+                    time.sleep(1)  # ✅ kasih jeda 1 detik sebelum standby lagi
                     start_mic_stream()
-                    print("Ready for next wake word...")
-                    
+                    print("✨ Ready for next wake word...")
+
         except Exception as e:
             print(f"Error in wake word detection: {e}")
-            # Try to restart microphone stream if there's an error
             mic_stream = None
             time.sleep(1)
             start_mic_stream()

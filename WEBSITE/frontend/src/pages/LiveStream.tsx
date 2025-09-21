@@ -107,7 +107,7 @@ export default function LiveStream() {
             >
               <img
                 src={isFallback ? "/no-signal.png" : streamUrl}
-                alt="Live Stream from VISMED Raspberry Pi 5"
+                // alt="Live Stream from VISMED Raspberry Pi 5"
                 className={isFallback ? glitchStyle.toString() : ""}
                 style={{
                   width: "100%",

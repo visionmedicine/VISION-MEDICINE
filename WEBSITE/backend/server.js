@@ -1,3 +1,4 @@
+// backend/server.js
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -9,8 +10,8 @@ import directionRoutes from "./routes/direction.js";
 import mapsRoutes from "./routes/maps.js";
 import medicinesRoutes from "./routes/medicines.js";
 import productsRoutes from "./routes/products.js";
-import howToUseRoutes from "./routes/how-to-use.js"; // ✅ How To Use
-import livestreamRoutes from "./routes/livestream.js"; // ✅ Live Stream Proxy
+import howToUseRoutes from "./routes/how-to-use.js";
+import livestreamRoutes from "./routes/livestream.js";
 
 const app = express();
 
@@ -30,7 +31,7 @@ app.use("/api/maps", mapsRoutes);
 app.use("/api/medicines", medicinesRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/how-to-use", howToUseRoutes);
-app.use("/api/livestream", livestreamRoutes); // ✅ Tambahan
+app.use("/api/livestream", livestreamRoutes);
 
 // Server start
 const PORT = process.env.PORT || 5000;

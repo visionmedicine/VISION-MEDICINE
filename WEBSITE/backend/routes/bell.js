@@ -1,5 +1,5 @@
 import express from "express";
-import { supabase, audioBucket } from "../supabase.js";
+import { supabase, audioBucket } from "../services/supabase.js";
 
 const router = express.Router();
 const REQUIRED_TOKEN = process.env.ESP32_SHARED_TOKEN;
@@ -15,7 +15,7 @@ router.post("/", async (req, res) => {
     const audioPath =
       req.body?.audioPath ||
       process.env.DEFAULT_AUDIO_PATH ||
-      "halo-vismed-disini.mp3";
+      "";
     const publicUrl = await getPublicAudioUrl(audioPath);
 
     const { data, error } = await supabase

@@ -413,7 +413,7 @@ const Reminder = () => {
               w={{ base: "100%", md: "fit-content" }}
               _hover={{ bg: "green.500" }}
             >
-              <FiPlus style={{ marginRight: 6 }} /> Add
+              <FiPlus style={{ marginRight : 6 }} /> Add
             </Button>
           </VStack>
         </Box>
