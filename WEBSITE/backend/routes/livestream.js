@@ -9,7 +9,7 @@ const router = express.Router();
 const proxy = httpProxy.createProxyServer({});
 
 // Ambil dari .env
-const RASPBERRY_URL = process.env.RASPBERRY_URL || "http://192.168.1.13:8000";
+const RASPBERRY_URL = process.env.RASPBERRY_URL || "http://192.168.1.16:8000";
 const API_TOKEN = process.env.API_TOKEN || "vismed-raspberry123";
 
 // Endpoint livestream

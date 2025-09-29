@@ -3,11 +3,7 @@ import { useEffect, useRef } from "react";
 import { Box, Flex, Text, VStack, HStack } from "@chakra-ui/react";
 import { FiMapPin, FiMap } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
-// import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
-
-// Leaflet imports
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
 
 declare global {
   interface Window {
@@ -25,10 +21,6 @@ const FindYourVISMED = () => {
     lng: 112.59541158001561,
   };
 
-  // =========================
-  // Google Maps setup (commented)
-  // =========================
-  /*
   useEffect(() => {
     loadGoogleMaps(import.meta.env.VITE_GOOGLE_MAPS_KEY).then(() => {
       if (mapContainerRef.current && !mapRef.current) {
@@ -45,29 +37,6 @@ const FindYourVISMED = () => {
       }
     });
   }, []);
-  */
-
-  // =========================
-  // Leaflet setup
-  // =========================
-  useEffect(() => {
-    if (mapContainerRef.current && !mapRef.current) {
-      mapRef.current = L.map(mapContainerRef.current).setView(
-        [alatLocation.lat, alatLocation.lng],
-        15
-      );
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      }).addTo(mapRef.current);
-
-      L.marker([alatLocation.lat, alatLocation.lng])
-        .addTo(mapRef.current)
-        .bindPopup("Lokasi VISMED")
-        .openPopup();
-    }
-  }, []);
 
   // 🔔 Trigger bel (panggil API backend)
   const handleBell = async () => {
@@ -78,11 +47,13 @@ const FindYourVISMED = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          audioPath: "halo-vismed-disini.mp3",
+          audioPath: "halo-vismed-disini.mp3", // ganti sesuai nama file di Supabase Storage
         }),
       });
 
-      if (!res.ok) throw new Error("Gagal trigger bel");
+      if (!res.ok) {
+        throw new Error("Gagal trigger bel");
+      }
 
       const data = await res.json();
       console.log("✅ Bell response:", data);
@@ -98,7 +69,6 @@ const FindYourVISMED = () => {
         (pos) => {
           const { latitude, longitude } = pos.coords;
 
-          // Google Maps directions URL
           const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${alatLocation.lat},${alatLocation.lng}&travelmode=driving`;
 
           window.open(gmapsUrl, "_blank");
@@ -116,7 +86,8 @@ const FindYourVISMED = () => {
   // 🎯 Fokuskan peta ke lokasi alat
   const handleLocation = () => {
     if (mapRef.current) {
-      mapRef.current.setView([alatLocation.lat, alatLocation.lng], 15);
+      mapRef.current.setCenter(alatLocation);
+      mapRef.current.setZoom(15);
     }
   };
 
@@ -124,12 +95,12 @@ const FindYourVISMED = () => {
     <PageTransition>
       <Flex
         direction="column"
-        minH="100dvh"
-        maxH="100dvh"
+        minH="100dvh" // selalu setinggi viewport
+        maxH="100dvh" // jangan lebih dari viewport
         w="100%"
         bg="#242424"
         p={{ base: 2, md: 4 }}
-        overflow="hidden"
+        overflow="hidden" // ⬅️ penting: cegah body ikut scroll
       >
         {/* Header */}
         <Flex
@@ -175,7 +146,7 @@ const FindYourVISMED = () => {
           borderColor="gray.600"
           justify="space-between"
           align="center"
-          mb={{ base: 3, md: 5 }}
+          mb={{ base: 3, md: 5 }} // <-- Added margin bottom
         >
           {/* Direction */}
           <Box
