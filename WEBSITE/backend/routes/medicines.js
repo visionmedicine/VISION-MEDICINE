@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
   try {
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: SPREADSHEET_ID,
-      range: "100 Obat'!B2:G", 
+      range: "'100 Obat'!B3:F",
       // Kolom B = Nama Obat
       // Kolom C = Kandungan
       // Kolom D = Indikasi

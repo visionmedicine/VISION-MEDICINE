@@ -19,6 +19,7 @@ type ReminderRow = {
   hour: string;
   minute: string;
   isSet?: boolean;
+  eventId?: string; // simpan id event dari Google Calendar
 };
 
 interface Medicine {
@@ -75,47 +76,23 @@ const customSelectStyles = {
   }),
 };
 
-const formatDateWithMonthName = (value: string) => {
-  if (!value) return "";
-  const monthNames = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
-  ];
-  const [year, month, day] = value.split("-");
-  const monthIndex = parseInt(month, 10) - 1;
-  return `${parseInt(day, 10)} ${monthNames[monthIndex]} ${year}`;
-};
-
 const Reminder = () => {
   const [reminders, setReminders] = useState<ReminderRow[]>([]);
   const [medicines, setMedicines] = useState<string[]>([]);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Load reminders dari localStorage saat pertama kali render
   useEffect(() => {
     const savedReminders = localStorage.getItem("reminders");
     if (savedReminders) {
       setReminders(JSON.parse(savedReminders));
     } else {
-      // default kalo belum ada data
       setReminders([
         { medicine: "", date: "", hour: "", minute: "", isSet: false },
       ]);
     }
   }, []);
 
-  // Save reminders ke localStorage tiap kali ada perubahan
   useEffect(() => {
     if (reminders.length > 0) {
       localStorage.setItem("reminders", JSON.stringify(reminders));
@@ -128,7 +105,7 @@ const Reminder = () => {
     }
   }, []);
 
-  // Fetch daftar obat dari backend
+  // fetch daftar obat
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
@@ -155,41 +132,81 @@ const Reminder = () => {
   ) => {
     setReminders((prev) =>
       prev.map((item, idx) =>
-        idx === index
-          ? ({ ...item, [field]: value, isSet: false } as ReminderRow)
-          : item
+        idx === index ? { ...item, [field]: value, isSet: false } : item
       )
     );
   };
 
-  const handleToggleSet = (index: number) => {
+  // toggle aktif/nonaktif
+  const handleToggleSet = async (index: number) => {
     const r = reminders[index];
     if (!r.medicine || !r.date || !r.hour || !r.minute) {
       alert("⚠️ Harap isi semua data sebelum menyimpan reminder!");
       return;
     }
-    const newValue = !r.isSet;
-    setReminders((prev) =>
-      prev.map((item, idx) =>
-        idx === index ? { ...item, isSet: newValue } : item
-      )
-    );
 
-    alert(
-      newValue
-        ? `✅ Reminder diaktifkan: ${
-            r.medicine
-          }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
-            2,
-            "0"
-          )}:${r.minute.padStart(2, "0")}`
-        : `⚠️ Reminder dinonaktifkan: ${
-            r.medicine
-          }, Tanggal ${formatDateWithMonthName(r.date)}, Jam ${r.hour.padStart(
-            2,
-            "0"
-          )}:${r.minute.padStart(2, "0")}`
-    );
+    if (!r.isSet) {
+      // Aktifkan → create event ke backend
+      try {
+        const res = await fetch("http://localhost:5000/api/reminder/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: "primary",
+            summary: r.medicine, // cuma nama obat
+            date: r.date,
+            hour: r.hour,
+            minute: r.minute,
+          }),
+        });
+        const data = await res.json();
+        if (data?.ok) {
+          setReminders((prev) =>
+            prev.map((item, idx) =>
+              idx === index
+                ? { ...item, isSet: true, eventId: data.eventId }
+                : item
+            )
+          );
+          alert(`✅ Reminder diaktifkan untuk ${r.medicine}`);
+        } else {
+          alert("❌ Gagal membuat reminder di Google Calendar");
+        }
+      } catch (err) {
+        console.error("❌ Error create reminder:", err);
+      }
+    } else {
+      // Nonaktifkan → delete event
+      try {
+        if (!r.eventId) {
+          alert(
+            "❌ Event ID tidak ditemukan, tidak bisa hapus dari Google Calendar"
+          );
+          return;
+        }
+        const res = await fetch("http://localhost:5000/api/reminder/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: "primary",
+            event_id: r.eventId,
+          }),
+        });
+        const data = await res.json();
+        if (data?.ok) {
+          setReminders((prev) =>
+            prev.map((item, idx) =>
+              idx === index
+                ? { ...item, isSet: false, eventId: undefined }
+                : item
+            )
+          );
+          alert(`⚠️ Reminder untuk ${r.medicine} sudah dihapus`);
+        }
+      } catch (err) {
+        console.error("❌ Error delete reminder:", err);
+      }
+    }
   };
 
   const handleAdd = () => {
@@ -199,11 +216,26 @@ const Reminder = () => {
     ]);
   };
 
-  const handleDeleteRow = (index: number) => {
+  // ⬇️ FIX: delete row juga hapus dari Google Calendar kalau ada eventId
+  const handleDeleteRow = async (index: number) => {
     const r = reminders[index];
     if (
       window.confirm(`Apakah yakin ingin menghapus reminder: ${r.medicine}?`)
     ) {
+      try {
+        if (r.eventId) {
+          await fetch("http://localhost:5000/api/reminder/delete", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_email: "primary",
+              event_id: r.eventId,
+            }),
+          });
+        }
+      } catch (err) {
+        console.error("❌ Error delete reminder via delete row:", err);
+      }
       setReminders((prev) => prev.filter((_, idx) => idx !== index));
     }
   };
@@ -286,10 +318,7 @@ const Reminder = () => {
                     options={medicineOptions}
                     value={
                       reminder.medicine
-                        ? {
-                            value: reminder.medicine,
-                            label: reminder.medicine,
-                          }
+                        ? { value: reminder.medicine, label: reminder.medicine }
                         : null
                     }
                     onChange={(selected) =>
@@ -347,7 +376,6 @@ const Reminder = () => {
                   gap={2}
                   justify={{ base: "flex-start", md: "flex-end" }}
                   ml={{ base: 0, md: "auto" }}
-                  w={{ base: "100%", md: "auto" }}
                 >
                   <label
                     style={{
@@ -413,7 +441,7 @@ const Reminder = () => {
               w={{ base: "100%", md: "fit-content" }}
               _hover={{ bg: "green.500" }}
             >
-              <FiPlus style={{ marginRight : 6 }} /> Add
+              <FiPlus style={{ marginRight: 6 }} /> Add
             </Button>
           </VStack>
         </Box>

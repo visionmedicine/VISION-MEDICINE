@@ -1,4 +1,4 @@
-// backend/server.js
+// WEBSITE/backend/server.js
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -12,6 +12,8 @@ import medicinesRoutes from "./routes/medicines.js";
 import productsRoutes from "./routes/products.js";
 import howToUseRoutes from "./routes/how-to-use.js";
 import livestreamRoutes from "./routes/livestream.js";
+import reminderRoutes from "./routes/reminder.js"; // 🔔 reminder
+import googleAuthRoutes from "./routes/googleAuth.js"; // 🔑 Google auth
 
 const app = express();
 
@@ -32,6 +34,8 @@ app.use("/api/medicines", medicinesRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/how-to-use", howToUseRoutes);
 app.use("/api/livestream", livestreamRoutes);
+app.use("/api/reminder", reminderRoutes); // ✅ reminder API
+app.use("/api/google", googleAuthRoutes); // ✅ google auth API
 
 // Server start
 const PORT = process.env.PORT || 5000;

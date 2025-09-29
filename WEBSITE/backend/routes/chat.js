@@ -17,11 +17,11 @@ router.post("/", async (req, res) => {
   }
 
   try {
-    // Kirim ke n8n dengan timeout 10 detik
+    // Kirim ke n8n dengan timeout 30 detik
     const response = await axios.post(
       N8N_WEBHOOK_URL,
       { message },
-      { timeout: 10000 }
+      { timeout: 30000 }
     );
 
     // Log full response buat debugging
@@ -33,12 +33,17 @@ router.post("/", async (req, res) => {
     const aiReply =
       response.data?.reply ||
       response.data?.output ||
-      response.data?.[0]?.json?.reply || // fallback kalau n8n kasih array json
+      response.data?.message || // ✅ langsung ambil message
+      response.data?.[0]?.json?.message || // ✅ kalau n8n kirim array json
+      response.data?.[0]?.message || // ✅ kalau array langsung tanpa json
       "VISMED tidak merespon 😅";
 
     res.json({ reply: aiReply });
   } catch (err) {
     console.error("❌ Error kirim ke n8n:", err.message);
+    if (err.response?.data) {
+      console.error("🔎 Response Error Body:", err.response.data);
+    }
     res.status(500).json({ reply: "Terjadi error di server VISMED 😢" });
   }
 });
