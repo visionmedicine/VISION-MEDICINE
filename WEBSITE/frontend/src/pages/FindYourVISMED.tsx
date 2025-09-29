@@ -3,9 +3,6 @@ import { useEffect, useRef } from "react";
 import { Box, Flex, Text, VStack, HStack } from "@chakra-ui/react";
 import { FiMapPin, FiMap } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
-// import { loadGoogleMaps } from "@/utils/loadGoogleMaps";
-
-// Leaflet imports
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -17,35 +14,14 @@ declare global {
 
 const FindYourVISMED = () => {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-  // Lokasi tujuan (alat VISMED)
-  const alatLocation = {
+  // Lokasi default (jika belum ada lokasi dari ESP32)
+  const defaultLocation = {
     lat: -7.919596235477069,
     lng: 112.59541158001561,
   };
-
-  // =========================
-  // Google Maps setup (commented)
-  // =========================
-  /*
-  useEffect(() => {
-    loadGoogleMaps(import.meta.env.VITE_GOOGLE_MAPS_KEY).then(() => {
-      if (mapContainerRef.current && !mapRef.current) {
-        mapRef.current = new window.google.maps.Map(mapContainerRef.current, {
-          center: alatLocation,
-          zoom: 15,
-        });
-
-        new window.google.maps.Marker({
-          position: alatLocation,
-          map: mapRef.current,
-          title: "Lokasi VISMED",
-        });
-      }
-    });
-  }, []);
-  */
 
   // =========================
   // Leaflet setup
@@ -53,7 +29,7 @@ const FindYourVISMED = () => {
   useEffect(() => {
     if (mapContainerRef.current && !mapRef.current) {
       mapRef.current = L.map(mapContainerRef.current).setView(
-        [alatLocation.lat, alatLocation.lng],
+        [defaultLocation.lat, defaultLocation.lng],
         15
       );
 
@@ -62,11 +38,38 @@ const FindYourVISMED = () => {
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(mapRef.current);
 
-      L.marker([alatLocation.lat, alatLocation.lng])
+      // marker awal
+      markerRef.current = L.marker([defaultLocation.lat, defaultLocation.lng])
         .addTo(mapRef.current)
         .bindPopup("Lokasi VISMED")
         .openPopup();
     }
+  }, []);
+
+  // =========================
+  // Fetch lokasi realtime tiap 5 detik
+  // =========================
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/maps");
+        const data = await res.json();
+
+        if (data.ok && mapRef.current && markerRef.current) {
+          const { lat, lng } = data.location;
+
+          // update marker
+          markerRef.current.setLatLng([lat, lng]);
+
+          // fokus peta
+          mapRef.current.setView([lat, lng]);
+        }
+      } catch (err) {
+        console.error("❌ Gagal fetch lokasi VISMED:", err);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // 🔔 Trigger bel (panggil API backend)
@@ -74,12 +77,8 @@ const FindYourVISMED = () => {
     try {
       const res = await fetch("http://localhost:5000/api/bell", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          audioPath: "halo-vismed-disini.mp3",
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audioPath: "halo-vismed-disini.mp3" }),
       });
 
       if (!res.ok) throw new Error("Gagal trigger bel");
@@ -97,10 +96,9 @@ const FindYourVISMED = () => {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           const { latitude, longitude } = pos.coords;
-
-          // Google Maps directions URL
-          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${alatLocation.lat},${alatLocation.lng}&travelmode=driving`;
-
+          const gmapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${
+            markerRef.current?.getLatLng().lat
+          },${markerRef.current?.getLatLng().lng}&travelmode=driving`;
           window.open(gmapsUrl, "_blank");
         },
         (err) => {
@@ -113,10 +111,10 @@ const FindYourVISMED = () => {
     }
   };
 
-  // 🎯 Fokuskan peta ke lokasi alat
+  // 🎯 Fokuskan peta ke marker terakhir
   const handleLocation = () => {
-    if (mapRef.current) {
-      mapRef.current.setView([alatLocation.lat, alatLocation.lng], 15);
+    if (mapRef.current && markerRef.current) {
+      mapRef.current.setView(markerRef.current.getLatLng(), 15);
     }
   };
 

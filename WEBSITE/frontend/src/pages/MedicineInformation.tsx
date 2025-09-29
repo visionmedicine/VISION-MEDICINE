@@ -38,6 +38,10 @@ const normalize = (s: string) =>
     .trim()
     .toLowerCase();
 
+// Capitalize setiap awal kata
+const capitalizeWords = (s: string) =>
+  s.replace(/\b\w/g, (char) => char.toUpperCase());
+
 // Keyframes animasi wavy loader (Emotion)
 const wave = keyframes`
   0%, 60%, 100% { transform: translateY(0); }
@@ -247,7 +251,7 @@ const MedicineInformation = () => {
                         fontWeight="bold"
                         fontSize={{ base: "sm", md: "md" }}
                       >
-                        {med.name}
+                        {capitalizeWords(med.name)}
                       </Text>
                       {isOpen ? <FaChevronUp /> : <FaChevronDown />}
                     </HStack>

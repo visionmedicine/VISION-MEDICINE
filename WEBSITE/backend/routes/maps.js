@@ -1,25 +1,39 @@
 // backend/routes/maps.js
 import express from "express";
-import axios from "axios";
 import dotenv from "dotenv";
-
 dotenv.config();
 
 const router = express.Router();
-const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
-router.get("/", async (req, res) => {
-  try {
-    // contoh lokasi Jakarta
-    const response = await axios.get(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=-6.200000,106.816666&key=${GOOGLE_MAPS_API_KEY}`
-    );
+// Simpan lokasi VISMED terakhir
+let vismedLocation = { lat: null, lng: null };
 
-    res.json(response.data);
-  } catch (err) {
-    console.error("❌ Error ambil lokasi:", err.message);
-    res.status(500).json({ error: "Gagal ambil lokasi" });
-  }
+// Token untuk ESP32 dari .env
+const ESP32_SHARED_TOKEN = process.env.ESP32_SHARED_TOKEN;
+
+// 🔄 Update lokasi ESP32
+router.post("/update", (req, res) => {
+  const token = req.query.token;
+  if (token !== ESP32_SHARED_TOKEN)
+    return res.status(403).json({ ok: false, msg: "Unauthorized" });
+
+  const { lat, lng } = req.body;
+  if (lat == null || lng == null)
+    return res.status(400).json({ ok: false, msg: "Invalid data" });
+
+  vismedLocation.lat = lat;
+  vismedLocation.lng = lng;
+
+  console.log("📍 VISMED location updated:", vismedLocation);
+  res.json({ ok: true });
 });
 
-export default router;
+// 🔄 Ambil lokasi VISMED terakhir
+router.get("/", (req, res) => {
+  if (vismedLocation.lat == null || vismedLocation.lng == null)
+    return res.json({ ok: false, msg: "No location yet" });
+
+  res.json({ ok: true, location: vismedLocation });
+});
+
+export default router; // ✅ ESM default export
