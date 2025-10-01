@@ -24,9 +24,6 @@ from pygame import mixer
 import vlc
 from datetime import date
 
-# Raspberry GPIO
-import RPi.GPIO as GPIO
-
 # ===============================
 # LOAD ENV
 # ===============================
@@ -95,36 +92,6 @@ print(f"? Pakai mic index {MIC_DEVICE}: {mic_list[MIC_DEVICE]}")
 session_active = False
 
 # ===============================
-# GPIO Ultrasonic Config
-# ===============================
-GPIO.setmode(GPIO.BCM)
-TRIG = 23
-ECHO = 24
-GPIO.setup(TRIG, GPIO.OUT)
-GPIO.setup(ECHO, GPIO.IN)
-
-def get_distance():
-    """Mengukur jarak dengan sensor ultrasonic HC-SR04"""
-    GPIO.output(TRIG, True)
-    time.sleep(0.00001)
-    GPIO.output(TRIG, False)
-
-    start_time = time.time()
-    stop_time = time.time()
-
-    while GPIO.input(ECHO) == 0:
-        start_time = time.time()
-
-    while GPIO.input(ECHO) == 1:
-        stop_time = time.time()
-
-    elapsed = stop_time - start_time
-    distance = (elapsed * 34300) / 2
-    return distance
-
-last_warning_time = 0  # cooldown untuk peringatan
-
-# ===============================
 # UTILS
 # ===============================
 def append2log(text):
@@ -186,23 +153,6 @@ def text2speech_play(text):
     play_wav(audio_file)
 
 # ===============================
-# Play Warning dari folder sounds/
-# ===============================
-def play_warning(file_name):
-    """Mainkan file mp3 untuk peringatan jarak dari folder sounds/"""
-    file_path = os.path.join("sounds", file_name)
-    if not os.path.exists(file_path):
-        print(f"[Warning File Missing] {file_path}")
-        return
-    try:
-        mixer.music.load(file_path)
-        mixer.music.play()
-        while mixer.music.get_busy():
-            time.sleep(0.1)
-    except Exception as e:
-        print(f"[Play Warning Error] {e}")
-
-# ===============================
 # Flask App
 # ===============================
 app = Flask(__name__)
@@ -223,7 +173,7 @@ def require_token(func):
 frame_count = 0
 
 def gen_frames():
-    global frame_count, session_active, last_warning_time
+    global frame_count, session_active
     while True:
         try:
             frame = picam2.capture_array()
@@ -232,16 +182,13 @@ def gen_frames():
             continue
 
         results = model(frame, imgsz=640, device=device, verbose=False)
+
         detected_obats = []
-        boxes_exist = False  # Flag bounding box ada
 
         for result in results:
             boxes = result.boxes.xyxy.cpu().numpy()
             confs = result.boxes.conf.cpu().numpy()
             clss = result.boxes.cls.cpu().numpy()
-
-            if len(boxes) > 0:
-                boxes_exist = True  # ada bounding box
 
             for box, conf, cls in zip(boxes, confs, clss):
                 x1, y1, x2, y2 = map(int, box)
@@ -265,6 +212,7 @@ def gen_frames():
                                 best_match, score, _ = match
                                 print(f"{detected_text} => {best_match}, {score}")
                                 detected_obats.append(best_match)
+
                     except Exception as e:
                         print(f"OCR error: {e}")
 
@@ -275,7 +223,11 @@ def gen_frames():
                     display_text += " [mode voice aktif]"
 
                 # Pilih warna bounding box
-                box_color = (0, 0, 255) if session_active else (0, 255, 0)
+                if session_active:
+                    box_color = (0, 0, 255)  # Merah
+                else:
+                    box_color = (0, 255, 0)  # Hijau
+
                 cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
                 cv2.putText(
                     frame, display_text,
@@ -284,20 +236,7 @@ def gen_frames():
                     0.6, box_color, 2
                 )
 
-        # ✅ MODIFIKASI: cek jarak ultrasonic walaupun OCR tidak terbaca
-        if boxes_exist:  
-            distance = get_distance()
-            print(f"📏 Jarak: {distance:.2f} cm")
-
-            now = time.time()
-            if distance > 20 and (now - last_warning_time > 1):
-                play_warning("Jarak Terlalu Jauh.mp3")
-                last_warning_time = now
-            elif distance < 15 and (now - last_warning_time > 1):
-                play_warning("Jarak Terlalu Dekat.mp3")
-                last_warning_time = now
-
-        # hanya kirim ke webhook kalau sedang TIDAK dalam voice session dan deteksi valid
+        # hanya kirim ke webhook kalau sedang TIDAK dalam voice session
         if not session_active and len(detected_obats) >= 1:
             first_obat = detected_obats[0]
             print(f"✅ Obat dipilih: {first_obat} (dari {len(detected_obats)} deteksi)")
@@ -417,8 +356,5 @@ def run_flask():
     app.run(host="0.0.0.0", port=8000, debug=False, use_reloader=False)
 
 if __name__ == "__main__":
-    try:
-        threading.Thread(target=run_flask, daemon=True).start()
-        main()
-    finally:
-        GPIO.cleanup()
+    threading.Thread(target=run_flask, daemon=True).start()
+    main()
