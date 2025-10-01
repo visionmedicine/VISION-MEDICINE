@@ -3,6 +3,7 @@ import time
 import os
 import requests   # buat webhook
 import re
+import threading
 
 # Turn off welcome message from pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -14,10 +15,11 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pygame import mixer
 import vlc   # untuk stream musik dari URL
+from flask import Flask, request, jsonify
 
 # === Webhook config ===
-WEBHOOK_NORMAL = "https://b9a991ea0bc5.ngrok-free.app/webhook-test/chat-input"
-WEBHOOK_REMINDER = "https://b9a991ea0bc5.ngrok-free.app/webhook/vismed-reminder"
+WEBHOOK_NORMAL = "https://800e07d771ab.ngrok-free.app/webhook/chat-input"
+WEBHOOK_REMINDER = "https://800e07d771ab.ngrok-free.app/webhook/vismed-reminder"
 
 # === Wake words & End word ===
 WAKE_WORDS = ["halo vidmate", "halo vismed", "halo fismed", "halo biznet", "halo bizned"]
@@ -32,12 +34,12 @@ mixer.pre_init(frequency=48000, buffer=2048)
 mixer.init()
 
 # === Auto detect microphone ===
-print("🎙️ Deteksi Microphone:")
+print("?? Deteksi Microphone:")
 mic_list = sr.Microphone.list_microphone_names()
 for i, name in enumerate(mic_list):
     print(f"[{i}] {name}")
 MIC_DEVICE = next((i for i, n in enumerate(mic_list) if "UACDEMO" in n.upper()), 0)
-print(f"✅ Pakai mic index {MIC_DEVICE}: {mic_list[MIC_DEVICE]}")
+print(f"? Pakai mic index {MIC_DEVICE}: {mic_list[MIC_DEVICE]}")
 
 # === Logging ===
 def append2log(text):
@@ -66,7 +68,7 @@ def play_wav(filename):
 # === Stream musik dari URL Supabase ===
 def play_music_from_url(url):
     try:
-        print(f"▶️ Streaming music from: {url}")
+        print(f"? Streaming music from: {url}")
         player = vlc.MediaPlayer(url)
         player.play()
 
@@ -108,7 +110,7 @@ def text2speech_play(text):
     tts_to_wav(text, audio_file)
     play_wav(audio_file)
 
-# === Main ===
+# === Main Listener (Mic) ===
 def main():
     rec = sr.Recognizer()
     slang = "id-ID"
@@ -124,7 +126,7 @@ def main():
         with mic as source:
             rec.adjust_for_ambient_noise(source, duration=0.5)
             try:
-                print("Listening ...")
+                print("?? listening...")
                 audio = rec.listen(source, timeout=10)
                 text = rec.recognize_google(audio, language=slang).lower().strip()
                 if not text:
@@ -176,7 +178,7 @@ def main():
                 else:
                     response_text = send_to_webhook(current_webhook, "User", text)
                     if response_text:
-                        # 🔥 Cek apakah ada URL musik di dalam response
+                        # ?? Cek apakah ada URL musik di dalam response
                         music_url = extract_music_url(response_text)
                         if music_url:
                             text2speech_play("Oke kak, ini musiknya")
@@ -188,5 +190,32 @@ def main():
                 print(f"Error: {e}")
                 continue
 
+
+# === Flask server untuk HTTP Request ===
+app = Flask(__name__)
+
+@app.route("/chat-input", methods=["POST"])
+def chat_input():
+    data = request.get_json()
+    if not data or "message" not in data:
+        return jsonify({"error": "message field required"}), 400
+
+    user_message = data["message"]
+    print(f"?? Pesan masuk dari HTTP request: {user_message}")
+
+    # langsung TTS play
+    text2speech_play(user_message)
+
+    return jsonify({"status": "ok", "echo": user_message}), 200
+
+
+def run_flask():
+    app.run(host="0.0.0.0", port=5678, debug=True, use_reloader=False)
+
+
 if __name__ == "__main__":
+    # Jalankan Flask di thread terpisah
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    # Jalankan loop mic listener
     main()

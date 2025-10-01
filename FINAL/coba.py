@@ -3,7 +3,7 @@ import time
 import os
 import requests   # buat webhook
 import re
-import threading  # for background webhook check
+import threading
 
 # Turn off welcome message from pygame
 os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -15,11 +15,11 @@ from gtts import gTTS
 from pydub import AudioSegment
 from pygame import mixer
 import vlc   # untuk stream musik dari URL
+from flask import Flask, request, jsonify
 
 # === Webhook config ===
-WEBHOOK_NORMAL = "https://e79ea0d88c8f.ngrok-free.app/webhook/chat-input"
-WEBHOOK_REMINDER = "https://e79ea0d88c8f.ngrok-free.app/webhook/vismed-reminder"
-WEBHOOK_CHECK = "https://e79ea0d88c8f.ngrok-free.app/webhook/check-reminder"
+WEBHOOK_NORMAL = "https://b9a991ea0bc5.ngrok-free.app/webhook-test/chat-input"
+WEBHOOK_REMINDER = "https://b9a991ea0bc5.ngrok-free.app/webhook/vismed-reminder"
 
 # === Wake words & End word ===
 WAKE_WORDS = ["halo vidmate", "halo vismed", "halo fismed", "halo biznet", "halo bizned"]
@@ -28,7 +28,6 @@ END_WORD = "thank you"
 
 # === Vars ===
 today = str(date.today())
-session_active = False   # 🔥 Global flag supaya background thread bisa cek
 
 # === Initialize pygame mixer ===
 mixer.pre_init(frequency=48000, buffer=2048)
@@ -72,6 +71,8 @@ def play_music_from_url(url):
         print(f"▶️ Streaming music from: {url}")
         player = vlc.MediaPlayer(url)
         player.play()
+
+        # tunggu sampai musik selesai
         while player.is_playing():
             time.sleep(0.5)
     except Exception as e:
@@ -79,6 +80,7 @@ def play_music_from_url(url):
 
 # === Extract music url from response ===
 def extract_music_url(text):
+    """Ambil URL mp3/wav dari teks respons webhook"""
     match = re.search(r"(https?://[^\s]+(?:\.mp3|\.wav))", text)
     if match:
         return match.group(1)
@@ -93,6 +95,7 @@ def send_to_webhook(url, role, text):
         print(f"[Webhook] Response: {resp.status_code} {resp.text}")
         if resp.status_code == 200:
             data = resp.json()
+            # ambil output dari JSON
             if isinstance(data, list) and len(data) > 0:
                 return data[0].get("output", "")
             elif isinstance(data, dict):
@@ -107,57 +110,23 @@ def text2speech_play(text):
     tts_to_wav(text, audio_file)
     play_wav(audio_file)
 
-# === Background Webhook Check Thread (filtered) ===
-def background_webhook_check():
-    global session_active
-    while True:
-        try:
-            payload = {"role": "System", "text": "check", "timestamp": str(time.time())}
-            resp = requests.post(WEBHOOK_CHECK, json=payload, timeout=10)
-
-            if resp.status_code == 200:
-                try:
-                    data = resp.json()
-                    # 🔥 hanya baca kalau ada output/message
-                    if isinstance(data, dict) and ("output" in data or "message" in data):
-                        msg = data.get("output") or data.get("message", "")
-                        if msg and not session_active:
-                            print(f"[CHECK Webhook] Reminder: {msg}")
-                            text2speech_play(msg)
-                        else:
-                            print("[CHECK Webhook] No reminder event or session active.")
-                    else:
-                        print("[CHECK Webhook] No reminder event.")
-                except Exception as e:
-                    print(f"[CHECK Webhook JSON Error] {e}")
-            else:
-                print(f"[CHECK Webhook] Status: {resp.status_code} | Empty Response")
-
-        except Exception as e:
-            print(f"[CHECK Webhook Error] {e}")
-
-        time.sleep(5)  # ping setiap 5 detik
-
-# === Main ===
+# === Main Listener (Mic) ===
 def main():
-    global session_active
-
-    threading.Thread(target=background_webhook_check, daemon=True).start()
-
     rec = sr.Recognizer()
     slang = "id-ID"
     mic = sr.Microphone(device_index=MIC_DEVICE)
     rec.dynamic_energy_threshold = False
     rec.energy_threshold = 400
 
-    reminder_mode = False
+    session_active = False
     current_webhook = WEBHOOK_NORMAL
+    reminder_mode = False
 
     while True:
         with mic as source:
             rec.adjust_for_ambient_noise(source, duration=0.5)
             try:
-                print("Listening ...")
+                print("🎤 listening...")
                 audio = rec.listen(source, timeout=10)
                 text = rec.recognize_google(audio, language=slang).lower().strip()
                 if not text:
@@ -172,6 +141,7 @@ def main():
                         print("[Wake Word Detected] Normal session started!")
                         session_active = True
                         current_webhook = WEBHOOK_NORMAL
+
                         text2speech_play("Halo, vismed di sini. Ada yang bisa dibantu?")
                         continue
 
@@ -179,12 +149,15 @@ def main():
                         print("[Wake Word Detected] Reminder session started!")
                         session_active = True
                         reminder_mode = True
+
+                        # Immediate response
                         text2speech_play("Oke, mari kita buat pengingat.")
+                        print("[Reminder Mode] Awaiting next input for reminder...")
                         continue
                     else:
                         continue
 
-                # === End word ===
+                # === Normal session end word ===
                 if not reminder_mode and END_WORD in text:
                     text2speech_play("Sama sama kak")
                     session_active = False
@@ -205,6 +178,7 @@ def main():
                 else:
                     response_text = send_to_webhook(current_webhook, "User", text)
                     if response_text:
+                        # 🔥 Cek apakah ada URL musik di dalam response
                         music_url = extract_music_url(response_text)
                         if music_url:
                             text2speech_play("Oke kak, ini musiknya")
@@ -216,5 +190,32 @@ def main():
                 print(f"Error: {e}")
                 continue
 
+
+# === Flask server untuk HTTP Request ===
+app = Flask(__name__)
+
+@app.route("/chat-input", methods=["POST"])
+def chat_input():
+    data = request.get_json()
+    if not data or "message" not in data:
+        return jsonify({"error": "message field required"}), 400
+
+    user_message = data["message"]
+    print(f"📩 Pesan masuk dari HTTP request: {user_message}")
+
+    # langsung TTS play
+    text2speech_play(user_message)
+
+    return jsonify({"status": "ok", "echo": user_message}), 200
+
+
+def run_flask():
+    app.run(host="0.0.0.0", port=5678, debug=True, use_reloader=False)
+
+
 if __name__ == "__main__":
+    # Jalankan Flask di thread terpisah
+    threading.Thread(target=run_flask, daemon=True).start()
+
+    # Jalankan loop mic listener
     main()

@@ -31,6 +31,14 @@ interface Medicine {
   golongan: string;
 }
 
+// ✅ Helper function untuk kapital di setiap kata
+const capitalizeWords = (str: string) =>
+  str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
 const customSelectStyles = {
   control: (provided: any, state: any) => ({
     ...provided,
@@ -114,7 +122,8 @@ const Reminder = () => {
         const sorted = data
           .filter((m) => !!m?.name)
           .sort((a, b) => a.name.localeCompare(b.name));
-        setMedicines(sorted.map((m) => m.name));
+        // ✅ Terapkan capitalizeWords biar "sanmol forte" → "Sanmol Forte"
+        setMedicines(sorted.map((m) => capitalizeWords(m.name)));
       } catch (error) {
         console.error("❌ Error fetching medicines:", error);
         setMedicines([]);
@@ -318,7 +327,10 @@ const Reminder = () => {
                     options={medicineOptions}
                     value={
                       reminder.medicine
-                        ? { value: reminder.medicine, label: reminder.medicine }
+                        ? {
+                            value: reminder.medicine,
+                            label: capitalizeWords(reminder.medicine),
+                          }
                         : null
                     }
                     onChange={(selected) =>
