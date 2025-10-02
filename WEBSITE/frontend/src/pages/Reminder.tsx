@@ -134,19 +134,53 @@ const Reminder = () => {
 
   const medicineOptions = medicines.map((m) => ({ value: m, label: m }));
 
-  const handleChange = (
+  const handleChange = async (
     index: number,
     field: keyof ReminderRow,
     value: string
   ) => {
-    setReminders((prev) =>
-      prev.map((item, idx) =>
-        idx === index ? { ...item, [field]: value, isSet: false } : item
-      )
-    );
+    setReminders((prev) => {
+      const item = prev[index];
+      let updated = [...prev];
+
+      // ✅ Jika sebelumnya aktif dan ada eventId → hapus dari Google & Supabase
+      if (item.isSet && item.eventId) {
+        fetch("http://localhost:5000/api/reminder/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: "primary", // ⚠️ ganti dengan email user yang bener
+            event_id: item.eventId,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data?.ok) {
+              console.error("❌ Gagal hapus event saat field berubah:", data);
+            } else {
+              console.log(
+                "🗑 Event terhapus karena field berubah:",
+                item.eventId
+              );
+            }
+          })
+          .catch((err) =>
+            console.error("❌ Error hapus event saat field berubah:", err)
+          );
+      }
+
+      // ✅ Update state lokal → reset toggle & buang eventId
+      updated[index] = {
+        ...item,
+        [field]: value,
+        isSet: false,
+        eventId: undefined,
+      };
+      return updated;
+    });
   };
 
-  // toggle aktif/nonaktif
+  // Toggle aktif/nonaktif
   const handleToggleSet = async (index: number) => {
     const r = reminders[index];
     if (!r.medicine || !r.date || !r.hour || !r.minute) {
@@ -154,18 +188,49 @@ const Reminder = () => {
       return;
     }
 
-    if (!r.isSet) {
-      // Aktifkan → create event ke backend
-      try {
+    try {
+      if (r.isSet) {
+        // ✅ Kalau sedang aktif → Nonaktifkan & hapus dari Google + Supabase
+        if (r.eventId) {
+          console.log("🗑 Hapus event via toggle OFF:", r.eventId);
+          const delRes = await fetch(
+            "http://localhost:5000/api/reminder/delete",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_email: "primary", // TODO: ganti dengan email user asli
+                event_id: r.eventId,
+              }),
+            }
+          );
+          const delData = await delRes.json();
+          if (!delData?.ok) {
+            alert("❌ Gagal menghapus event di Google/Supabase");
+            return;
+          }
+        }
+
+        // Update state lokal
+        setReminders((prev) =>
+          prev.map((item, idx) =>
+            idx === index ? { ...item, isSet: false, eventId: undefined } : item
+          )
+        );
+        alert(`⚠️ Reminder untuk ${r.medicine} dinonaktifkan`);
+      } else {
+        // ✅ Kalau sedang nonaktif → Buat event baru
+        console.log("➕ Create event:", r);
         const res = await fetch("http://localhost:5000/api/reminder/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_email: "primary",
-            summary: r.medicine, // cuma nama obat
+            user_email: "primary", // TODO: ganti dengan email user asli
+            summary: r.medicine,
             date: r.date,
             hour: r.hour,
             minute: r.minute,
+            active: true,
           }),
         });
         const data = await res.json();
@@ -181,40 +246,9 @@ const Reminder = () => {
         } else {
           alert("❌ Gagal membuat reminder di Google Calendar");
         }
-      } catch (err) {
-        console.error("❌ Error create reminder:", err);
       }
-    } else {
-      // Nonaktifkan → delete event
-      try {
-        if (!r.eventId) {
-          alert(
-            "❌ Event ID tidak ditemukan, tidak bisa hapus dari Google Calendar"
-          );
-          return;
-        }
-        const res = await fetch("http://localhost:5000/api/reminder/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_email: "primary",
-            event_id: r.eventId,
-          }),
-        });
-        const data = await res.json();
-        if (data?.ok) {
-          setReminders((prev) =>
-            prev.map((item, idx) =>
-              idx === index
-                ? { ...item, isSet: false, eventId: undefined }
-                : item
-            )
-          );
-          alert(`⚠️ Reminder untuk ${r.medicine} sudah dihapus`);
-        }
-      } catch (err) {
-        console.error("❌ Error delete reminder:", err);
-      }
+    } catch (err) {
+      console.error("❌ Error toggle reminder:", err);
     }
   };
 
@@ -225,7 +259,7 @@ const Reminder = () => {
     ]);
   };
 
-  // ⬇️ FIX: delete row juga hapus dari Google Calendar kalau ada eventId
+  // Hapus row juga hapus dari Google Calendar kalau ada eventId
   const handleDeleteRow = async (index: number) => {
     const r = reminders[index];
     if (
@@ -233,14 +267,24 @@ const Reminder = () => {
     ) {
       try {
         if (r.eventId) {
-          await fetch("http://localhost:5000/api/reminder/delete", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              user_email: "primary",
-              event_id: r.eventId,
-            }),
-          });
+          console.log("🗑 Delete row + event:", r.eventId);
+          const delRes = await fetch(
+            "http://localhost:5000/api/reminder/delete",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                user_email: "primary", // TODO: ganti dengan email user asli
+                event_id: r.eventId,
+                active: false,
+              }),
+            }
+          );
+          const delData = await delRes.json();
+          if (!delData?.ok) {
+            alert("❌ Gagal menghapus event di Google/Supabase");
+            return;
+          }
         }
       } catch (err) {
         console.error("❌ Error delete reminder via delete row:", err);
