@@ -7,7 +7,7 @@ from ultralytics import YOLO
 import easyocr
 import torch
 import pandas as pd
-import textdistance   # 🔄 ganti rapidfuzz dengan textdistance
+from rapidfuzz import process, fuzz
 from picamera2 import Picamera2
 import os
 from dotenv import load_dotenv
@@ -32,11 +32,11 @@ import RPi.GPIO as GPIO
 # ===============================
 load_dotenv()
 API_TOKEN = os.getenv("API_TOKEN", "vismed-raspberry123")
-YOLO_MODEL = os.getenv("YOLO_MODEL", "best_tuned.pt")
-OBAT_CSV = os.getenv("OBAT_CSV", "Data Obat - 70 Obat.csv")
+YOLO_MODEL = os.getenv("YOLO_MODEL", "obatt.pt")
+OBAT_CSV = os.getenv("OBAT_CSV", "dummy_obat.csv")
 
-WEBHOOK_NORMAL = "https://5244394d8e2f.ngrok-free.app/webhook/chat-input"
-WEBHOOK_REMINDER = "https://5244394d8e2f.ngrok-free.app/webhook/vismed-reminder"
+WEBHOOK_NORMAL = "https://350d0769df23.ngrok-free.app/webhook/chat-input"
+WEBHOOK_REMINDER = "https://350d0769df23.ngrok-free.app/webhook/vismed-reminder"
 
 # ===============================
 # YOLO MODEL
@@ -231,13 +231,12 @@ def require_token(func):
     return wrapper
 
 # ===============================
-# BACKGROUND CAMERA LOOP
+# YOLO + OCR FRAME STREAMING
 # ===============================
 frame_count = 0
-last_frame = None
 
-def camera_loop():
-    global frame_count, session_active, last_warning_time, last_frame
+def gen_frames():
+    global frame_count, session_active, last_warning_time
     while True:
         try:
             frame = picam2.capture_array()
@@ -246,8 +245,8 @@ def camera_loop():
             continue
 
         results = model(frame, imgsz=640, device=device, verbose=False)
-        detected_obats = []  # kumpulin semua hasil OCR
-        boxes_exist = False
+        detected_obats = []
+        boxes_exist = False  # Flag bounding box ada
 
         for result in results:
             boxes = result.boxes.xyxy.cpu().numpy()
@@ -255,7 +254,7 @@ def camera_loop():
             clss = result.boxes.cls.cpu().numpy()
 
             if len(boxes) > 0:
-                boxes_exist = True
+                boxes_exist = True  # ada bounding box
 
             for box, conf, cls in zip(boxes, confs, clss):
                 x1, y1, x2, y2 = map(int, box)
@@ -270,19 +269,15 @@ def camera_loop():
                         ocr_result = reader.readtext(roi)
                         if ocr_result:
                             detected_text = max(ocr_result, key=lambda x: x[2])[1]
-
-                            for obat in daftar_obat:
-                                sim = textdistance.levenshtein.normalized_similarity(
-                                    detected_text.lower(), obat.lower()
-                                )
-                                sim_score = int(sim * 100)
-                                if sim_score > score:
-                                    best_match, score = obat, sim_score
-
-                            if best_match:
-                                detected_obats.append((best_match, score))
-                                print(f"[OCR] {detected_text} => {best_match}, {score}%")
-
+                            match = process.extractOne(
+                                detected_text.lower(),
+                                daftar_obat,
+                                scorer=fuzz.ratio,
+                            )
+                            if match:
+                                best_match, score, _ = match
+                                print(f"{detected_text} => {best_match}, {score}")
+                                detected_obats.append(best_match)
                     except Exception as e:
                         print(f"OCR error: {e}")
 
@@ -292,15 +287,18 @@ def camera_loop():
                 if session_active:
                     display_text += " [mode voice aktif]"
 
+                # Pilih warna bounding box
                 box_color = (0, 0, 255) if session_active else (0, 255, 0)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
-                cv2.putText(frame, display_text,
-                            (x1, max(0, y1 - 10)),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.6, box_color, 2)
+                cv2.putText(
+                    frame, display_text,
+                    (x1, max(0, y1 - 10)),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.6, box_color, 2
+                )
 
-        # ✅ ultrasonic check
-        if boxes_exist:
+        # ✅ MODIFIKASI: cek jarak ultrasonic + cooldown
+        if boxes_exist:  
             distance = get_distance()
             print(f"📏 Jarak: {distance:.2f} cm")
 
@@ -312,29 +310,22 @@ def camera_loop():
                 safe_play_warning("Jarak Terlalu Dekat.mp3")
                 last_warning_time = now
 
-        # 🔄 ambil obat dengan rata-rata score tertinggi
+        # hanya kirim ke webhook kalau sedang TIDAK dalam voice session dan deteksi valid
         if not session_active and len(detected_obats) >= 1:
-            from collections import defaultdict
-            score_map = defaultdict(list)
-            for obat, score in detected_obats:
-                score_map[obat].append(score)
-
-            avg_scores = {obat: sum(scores)/len(scores) for obat, scores in score_map.items()}
-            best_obat, best_score = max(avg_scores.items(), key=lambda x: x[1])
-
-            print(f"💊 Obat dipilih: {best_obat} (avg {best_score:.2f}%) dari {len(detected_obats)} deteksi")
-
-            time.sleep(5)  # ⏳ delay 3 detik
-
-            info_text = f"Berikan Informasi Obat {best_obat}"
+            first_obat = detected_obats[0]
+            print(f"💊 Obat dipilih: {first_obat} (dari {len(detected_obats)} deteksi)")
+            info_text = f"Berikan Informasi Obat {first_obat}"
             response_text = send_to_webhook(WEBHOOK_NORMAL, "System", info_text)
             if response_text:
                 text2speech_play(response_text)
 
         frame_count += 1
         ret, buffer = cv2.imencode('.jpg', frame)
-        if ret:
-            last_frame = buffer.tobytes()
+        if not ret:
+            continue
+
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
 # ===============================
 # Flask Routes
@@ -342,13 +333,6 @@ def camera_loop():
 @app.route('/video_feed')
 @require_token
 def video_feed():
-    def gen_frames():
-        global last_frame
-        while True:
-            if last_frame:
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + last_frame + b'\r\n')
-            time.sleep(0.05)
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/')
@@ -447,8 +431,9 @@ def run_flask():
 
 if __name__ == "__main__":
     try:
+        # ✅ Play sound Raspberry Ready ketika program pertama kali dijalankan
         safe_play_warning("Raspberry Ready.mp3")
-        threading.Thread(target=camera_loop, daemon=True).start()
+
         threading.Thread(target=run_flask, daemon=True).start()
         main()
     finally:

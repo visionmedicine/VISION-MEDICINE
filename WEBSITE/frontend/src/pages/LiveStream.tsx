@@ -1,3 +1,4 @@
+// LiveStream.tsx
 import { Box, Heading, Text, Flex, Button } from "@chakra-ui/react";
 import { keyframes, css } from "@emotion/react";
 import { useState } from "react";
@@ -65,7 +66,7 @@ export default function LiveStream() {
         </Flex>
 
         {!isConnected ? (
-          // ⬇️ Tampilan saat belum connect (hanya tombol & teks di tengah layar)
+          // ⬇️ Tampilan saat belum connect
           <Flex
             direction="column"
             align="center"
@@ -107,13 +108,14 @@ export default function LiveStream() {
             >
               <img
                 src={isFallback ? "/no-signal.png" : streamUrl}
-                // alt="Live Stream from VISMED Raspberry Pi 5"
                 className={isFallback ? glitchStyle.toString() : ""}
                 style={{
                   width: "100%",
-                  height: "70vh",
-                  objectFit: "cover",
+                  height: "70vh", // balik ke tinggi fix
+                  objectFit: "contain", // biar proporsional (beda dengan cover yg bisa crop)
                   display: "block",
+                  margin: "0 auto",
+                  backgroundColor: "black",
                 }}
                 onError={handleImgError}
               />
