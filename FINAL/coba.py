@@ -35,8 +35,8 @@ API_TOKEN = os.getenv("API_TOKEN", "vismed-raspberry123")
 YOLO_MODEL = os.getenv("YOLO_MODEL", "best_tuned.pt")
 OBAT_CSV = os.getenv("OBAT_CSV", "Data Obat - 70 Obat.csv")
 
-WEBHOOK_NORMAL = "https://5244394d8e2f.ngrok-free.app/webhook/chat-input"
-WEBHOOK_REMINDER = "https://5244394d8e2f.ngrok-free.app/webhook/vismed-reminder"
+WEBHOOK_NORMAL = "https://aef24d44b22f.ngrok-free.app/webhook/chat-input"
+WEBHOOK_REMINDER = "https://aef24d44b22f.ngrok-free.app/webhook/vismed-reminder"
 
 # ===============================
 # YOLO MODEL
@@ -322,14 +322,26 @@ def camera_loop():
             avg_scores = {obat: sum(scores)/len(scores) for obat, scores in score_map.items()}
             best_obat, best_score = max(avg_scores.items(), key=lambda x: x[1])
 
-            print(f"💊 Obat dipilih: {best_obat} (avg {best_score:.2f}%) dari {len(detected_obats)} deteksi")
+            print(f"💊 Obat kandidat: {best_obat} (avg {best_score:.2f}%) dari {len(detected_obats)} deteksi")
 
-            time.sleep(5)  # ⏳ delay 3 detik
+            # Jika rata-rata kurang dari 70% -> skip
+            if best_score < 70:
+                print(f"🚫 Skip {best_obat}: avg {best_score:.2f}% < 70%")
+            else:
+                # Play detection sound first (user requested)
+                detection_sound = "Obat Terdeteksi. Mohon Tunggu Beberapa Saat.mp3"
+                if os.path.exists(os.path.join("sounds", detection_sound)):
+                    safe_play_warning(detection_sound)
+                else:
+                    print(f"[Missing Sound] sounds/{detection_sound} tidak ditemukan. Melanjutkan tanpa play.")
 
-            info_text = f"Berikan Informasi Obat {best_obat}"
-            response_text = send_to_webhook(WEBHOOK_NORMAL, "System", info_text)
-            if response_text:
-                text2speech_play(response_text)
+                # Delay 3 detik sebelum kirim (sesuai catatan)
+                time.sleep(3)
+
+                info_text = f"Berikan Informasi Obat {best_obat}"
+                response_text = send_to_webhook(WEBHOOK_NORMAL, "System", info_text)
+                if response_text:
+                    text2speech_play(response_text)
 
         frame_count += 1
         ret, buffer = cv2.imencode('.jpg', frame)

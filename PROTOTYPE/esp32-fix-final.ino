@@ -41,8 +41,8 @@ int buzzerState = 0;
 // ===============================
 TinyGPSPlus gps;
 HardwareSerial gpsSerial(1);  // UART1 untuk GPS
-#define GPS_RX 32
-#define GPS_TX 34
+#define GPS_RX 34
+#define GPS_TX 32
 unsigned long lastGPSUpload = 0;
 
 // ===============================
