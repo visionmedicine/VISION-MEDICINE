@@ -1,6 +1,7 @@
 body {
   font-family: "Poppins", sans-serif;
 }
+
 @import "tailwindcss";
 /* @tailwind base; */
 /* @tailwind components; */
@@ -11,6 +12,7 @@ body {
   overflow-x: hidden;
 }
 
+/* 🎨 Background Global (pindahan dari Home.tsx) */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -18,10 +20,28 @@ body {
 
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  background-color: #242424; /* <- ini menggantikan bg Home.tsx */
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ✨ Efek lembut untuk background halaman */
+body {
+  background-color: #242424;
+  background-image: radial-gradient(
+      circle at top right,
+      rgba(255, 165, 0, 0.08),
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(255, 140, 0, 0.08),
+      transparent 50%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
 }

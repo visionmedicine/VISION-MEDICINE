@@ -157,7 +157,6 @@ const MedicineInformation = () => {
         minH="100dvh"
         maxH="100dvh"
         w="100%"
-        bg="#242424"
         p={{ base: 2, md: 4 }}
         overflow="hidden"
       >
@@ -276,9 +275,6 @@ const MedicineInformation = () => {
                         <Text mb={2}>
                           <strong>Efek Samping:</strong> {med.efekSamping}
                         </Text>
-                        {/* <Text>
-                          <strong>Golongan:</strong> {med.golongan}
-                        </Text> */}
                       </Box>
                     </Collapse>
                   </Box>

@@ -53,7 +53,7 @@ const VISMEDTalks = () => {
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const shouldAutoScroll = useRef(true);
-  const inputRef = useRef<HTMLInputElement | null>(null); // ⬅️ fokus input
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   // Load chat history dari localStorage
   useEffect(() => {
@@ -121,10 +121,7 @@ const VISMEDTalks = () => {
     const userMessage = input.trim();
     setMessages((prev) => [...prev, { from: "user", text: userMessage }]);
     setInput("");
-
-    // ⬅️ jaga fokus biar keyboard gak nutup
     inputRef.current?.focus();
-
     setIsTyping(true);
 
     try {
@@ -190,7 +187,6 @@ const VISMEDTalks = () => {
         minH="100dvh"
         maxH="100dvh"
         w="100%"
-        bg="#242424"
         p={{ base: 2, md: 4 }}
         overflow="hidden"
       >
@@ -281,7 +277,7 @@ const VISMEDTalks = () => {
           {/* Wrapper untuk tombol + dan popup */}
           <Box ref={menuRef}>
             <IconButton
-              type="button" // ⬅️ fix biar gak blur input
+              type="button"
               aria-label="Menu"
               size={{ base: "sm", md: "md" }}
               variant="ghost"
@@ -319,7 +315,7 @@ const VISMEDTalks = () => {
                   _hover={{ bg: "gray.200" }}
                   px={3}
                   py={2}
-                  borderRadius="full" // ⬅️ bikin tombol super bulat
+                  borderRadius="full"
                   onClick={handleClearChat}
                 >
                   <FiTrash2 />
@@ -352,7 +348,7 @@ const VISMEDTalks = () => {
 
           {/* Input */}
           <Input
-            ref={inputRef} // ⬅️ biar bisa di-focus lagi
+            ref={inputRef}
             placeholder="Tulis pesan..."
             value={input}
             onChange={(e) => setInput(e.target.value)}

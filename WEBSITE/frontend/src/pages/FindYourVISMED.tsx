@@ -125,7 +125,7 @@ const FindYourVISMED = () => {
         minH="100dvh"
         maxH="100dvh"
         w="100%"
-        bg="#242424"
+        // ❌ bg dihapus agar tidak bertumpuk dengan App.css dan index.css
         p={{ base: 2, md: 4 }}
         overflow="hidden"
       >

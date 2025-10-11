@@ -149,7 +149,7 @@ const Reminder = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_email: "primary", // ⚠️ ganti dengan email user yang bener
+            user_email: "primary",
             event_id: item.eventId,
           }),
         })
@@ -190,7 +190,6 @@ const Reminder = () => {
 
     try {
       if (r.isSet) {
-        // ✅ Kalau sedang aktif → Nonaktifkan & hapus dari Google + Supabase
         if (r.eventId) {
           console.log("🗑 Hapus event via toggle OFF:", r.eventId);
           const delRes = await fetch(
@@ -199,7 +198,7 @@ const Reminder = () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                user_email: "primary", // TODO: ganti dengan email user asli
+                user_email: "primary",
                 event_id: r.eventId,
               }),
             }
@@ -211,7 +210,6 @@ const Reminder = () => {
           }
         }
 
-        // Update state lokal
         setReminders((prev) =>
           prev.map((item, idx) =>
             idx === index ? { ...item, isSet: false, eventId: undefined } : item
@@ -219,13 +217,12 @@ const Reminder = () => {
         );
         alert(`⚠️ Reminder untuk ${r.medicine} dinonaktifkan`);
       } else {
-        // ✅ Kalau sedang nonaktif → Buat event baru
         console.log("➕ Create event:", r);
         const res = await fetch("http://localhost:5000/api/reminder/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            user_email: "primary", // TODO: ganti dengan email user asli
+            user_email: "primary",
             summary: r.medicine,
             date: r.date,
             hour: r.hour,
@@ -259,7 +256,6 @@ const Reminder = () => {
     ]);
   };
 
-  // Hapus row juga hapus dari Google Calendar kalau ada eventId
   const handleDeleteRow = async (index: number) => {
     const r = reminders[index];
     if (
@@ -274,7 +270,7 @@ const Reminder = () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                user_email: "primary", // TODO: ganti dengan email user asli
+                user_email: "primary",
                 event_id: r.eventId,
                 active: false,
               }),
@@ -315,13 +311,7 @@ const Reminder = () => {
 
   return (
     <PageTransition>
-      <Flex
-        direction="column"
-        h="100vh"
-        w="100%"
-        bg="#242424"
-        p={{ base: 2, md: 4 }}
-      >
+      <Flex direction="column" h="100vh" w="100%" p={{ base: 2, md: 4 }}>
         {/* Header */}
         <Flex
           align="center"

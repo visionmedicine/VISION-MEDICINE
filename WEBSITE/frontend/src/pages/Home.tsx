@@ -29,7 +29,7 @@ const Home = () => {
   const [products, setProducts] = useState<MediaItem[]>([]);
   const [loadingHowToUse, setLoadingHowToUse] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); // ✅ overlay popup
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
@@ -164,7 +164,7 @@ const Home = () => {
           variant="ghost"
           color="white"
           fontSize="28px"
-          _hover={{ bg: "transparent" }}
+          _hover={{ bg: "transparent", color: "orange.300" }}
         >
           <FiChevronLeft />
         </IconButton>
@@ -194,7 +194,7 @@ const Home = () => {
                 w="12px"
                 h="12px"
                 borderRadius="full"
-                bg="white"
+                bg="orange.300"
                 animation={`${wave} 1s ease-in-out infinite`}
                 animationDelay={`${i * 0.2}s`}
               />
@@ -216,15 +216,21 @@ const Home = () => {
                 minW={{ base: "100%", md: "30%" }}
                 maxW={{ base: "100%", md: "30%" }}
                 flexShrink={0}
-                bg="#445775"
-                boxShadow="md"
-                borderRadius="md"
+                bg="rgba(68, 87, 117, 0.55)"
+                backdropFilter="blur(12px)"
+                border="1px solid rgba(255, 255, 255, 0.18)"
+                boxShadow="0 8px 24px rgba(255, 165, 0, 0.1)"
+                borderRadius="2xl"
                 p={4}
-                borderLeft="5px solid white"
                 minH="320px"
                 position="relative"
+                transition="all 0.3s ease"
+                _hover={{
+                  transform: "translateY(-6px)",
+                  boxShadow: "0 12px 28px rgba(255, 165, 0, 0.25)",
+                }}
               >
-                <Heading fontSize="lg" color="white" mb={2}>
+                <Heading fontSize="lg" color="white" mb={3}>
                   {titleText}
                 </Heading>
 
@@ -232,7 +238,7 @@ const Home = () => {
                   position="relative"
                   textAlign="center"
                   overflow="hidden"
-                  borderRadius="8px"
+                  borderRadius="12px"
                 >
                   <img
                     src={item.url}
@@ -241,12 +247,11 @@ const Home = () => {
                       width: "100%",
                       height: "220px",
                       objectFit: "cover",
-                      borderRadius: "8px",
+                      borderRadius: "12px",
                       transition: "transform 0.3s ease",
                     }}
                   />
 
-                  {/* Tombol Zoom di pojok kiri atas */}
                   <IconButton
                     aria-label="Zoom In"
                     size="sm"
@@ -278,7 +283,7 @@ const Home = () => {
           variant="ghost"
           color="white"
           fontSize="28px"
-          _hover={{ bg: "transparent" }}
+          _hover={{ bg: "transparent", color: "orange.300" }}
         >
           <FiChevronRight />
         </IconButton>
@@ -288,81 +293,98 @@ const Home = () => {
 
   return (
     <PageTransition>
-      <Box p={3} pl={{ base: 10, md: 4 }} bg="#242424" color="white">
-        <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
-          Selamat Datang di Vision Medicine!
-        </Heading>
-        <Text fontSize={{ base: "lg", md: "xl" }} mt={2}>
-          Deteksi Obat Kini Lebih Mudah
-        </Text>
+      <Box
+        p={3}
+        pl={{ base: 10, md: 4 }}
+        color="white"
+        minH="100vh"
+        position="relative"
+        overflow="hidden"
+      >
+        {/* ✅ Background dihapus agar tidak bertumpuk dengan index.css / App.css */}
 
-        {/* How to Use */}
-        <Box
-          mt={8}
-          bg="rgba(255,255,255,0.09)"
-          borderRadius="md"
-          p={{ base: 4, md: 6 }}
-          boxShadow="lg"
-          color="black"
-        >
-          <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
-            How to Use ?
+        <Box position="relative" zIndex={1}>
+          <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
+            Selamat Datang di Vision Medicine!
           </Heading>
-          {renderHorizontalList(
-            howToUse,
-            "Step",
-            scrollRef1,
-            showLeftArrow1,
-            showRightArrow1,
-            setShowLeftArrow1,
-            setShowRightArrow1,
-            loadingHowToUse
-          )}
-        </Box>
+          <Text fontSize={{ base: "lg", md: "xl" }} mt={2}>
+            Deteksi Obat Kini Lebih Mudah
+          </Text>
 
-        {/* Live Stream */}
-        <Box
-          mt={8}
-          bg="rgba(255,255,255,0.9)"
-          borderRadius="md"
-          p={{ base: 3, md: 5 }}
-          boxShadow="lg"
-          textAlign="center"
-          cursor="pointer"
-          color="black"
-          onClick={() => navigate("/livestream")}
-          _hover={{
-            bg: "orange.500",
-            color: "white",
-          }}
-        >
-          <Heading fontSize={{ base: "17px", md: "2xl" }}>
-            ===📸 Live Stream Detection 📸===
-          </Heading>
-        </Box>
+          {/* How to Use */}
+          <Box
+            mt={8}
+            bg="rgba(255,255,255,0.08)"
+            backdropFilter="blur(14px)"
+            border="1px solid rgba(255,255,255,0.15)"
+            borderRadius="2xl"
+            p={{ base: 4, md: 6 }}
+            boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          >
+            <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
+              How to Use ?
+            </Heading>
+            {renderHorizontalList(
+              howToUse,
+              "Step",
+              scrollRef1,
+              showLeftArrow1,
+              showRightArrow1,
+              setShowLeftArrow1,
+              setShowRightArrow1,
+              loadingHowToUse
+            )}
+          </Box>
 
-        {/* Our Product */}
-        <Box
-          mt={8}
-          bg="rgba(255,255,255,0.09)"
-          borderRadius="md"
-          p={{ base: 4, md: 6 }}
-          boxShadow="lg"
-          color="black"
-        >
-          <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
-            Our Product
-          </Heading>
-          {renderHorizontalList(
-            products,
-            "Product",
-            scrollRef2,
-            showLeftArrow2,
-            showRightArrow2,
-            setShowLeftArrow2,
-            setShowRightArrow2,
-            loadingProducts
-          )}
+          {/* Live Stream */}
+          <Box
+            mt={8}
+            bg="rgba(255,255,255,0.12)"
+            backdropFilter="blur(14px)"
+            border="1px solid rgba(255,255,255,0.2)"
+            borderRadius="2xl"
+            p={{ base: 3, md: 5 }}
+            boxShadow="0 8px 24px rgba(255,165,0,0.2)"
+            textAlign="center"
+            cursor="pointer"
+            color="white"
+            onClick={() => navigate("/livestream")}
+            transition="all 0.3s ease"
+            _hover={{
+              bg: "rgba(255,165,0,0.25)",
+              transform: "scale(1.01)",
+              boxShadow: "0 12px 30px rgba(255,165,0,0.3)",
+            }}
+          >
+            <Heading fontSize={{ base: "17px", md: "2xl" }}>
+              ===📸 Live Stream Detection 📸===
+            </Heading>
+          </Box>
+
+          {/* Our Product */}
+          <Box
+            mt={8}
+            bg="rgba(255,255,255,0.08)"
+            backdropFilter="blur(14px)"
+            border="1px solid rgba(255,255,255,0.15)"
+            borderRadius="2xl"
+            p={{ base: 4, md: 6 }}
+            boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          >
+            <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
+              Our Product
+            </Heading>
+            {renderHorizontalList(
+              products,
+              "Product",
+              scrollRef2,
+              showLeftArrow2,
+              showRightArrow2,
+              setShowLeftArrow2,
+              setShowRightArrow2,
+              loadingProducts
+            )}
+          </Box>
         </Box>
       </Box>
 
@@ -380,14 +402,14 @@ const Home = () => {
           display="flex"
           alignItems="center"
           justifyContent="center"
-          onClick={() => setSelectedImage(null)} // ✅ klik di mana pun = close
+          onClick={() => setSelectedImage(null)}
         >
           <Image
             src={selectedImage}
             maxH="90vh"
             maxW="90vw"
-            borderRadius="lg"
-            boxShadow="2xl"
+            borderRadius="xl"
+            boxShadow="0 12px 32px rgba(255,165,0,0.3)"
           />
         </Box>
       )}
