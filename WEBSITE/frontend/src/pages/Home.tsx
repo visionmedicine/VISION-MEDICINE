@@ -5,11 +5,12 @@ import {
   Flex,
   IconButton,
   useBreakpointValue,
+  Image,
 } from "@chakra-ui/react";
-import { FiChevronRight, FiChevronLeft } from "react-icons/fi";
+import { FiChevronRight, FiChevronLeft, FiZoomIn } from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
 import { keyframes } from "@emotion/react";
-import { useNavigate } from "react-router-dom"; // ✅ import navigate hook
+import { useNavigate } from "react-router-dom";
 import PageTransition from "@/components/layouts/PageTransition";
 
 type MediaItem = {
@@ -17,7 +18,7 @@ type MediaItem = {
   url: string;
 };
 
-// 🔥 Keyframes animasi loading
+// 🔥 Animasi loading titik-titik
 const wave = keyframes`
   0%, 60%, 100% { transform: translateY(0); }
   30% { transform: translateY(-10px); }
@@ -28,6 +29,7 @@ const Home = () => {
   const [products, setProducts] = useState<MediaItem[]>([]);
   const [loadingHowToUse, setLoadingHowToUse] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); // ✅ overlay popup
 
   const scrollRef1 = useRef<HTMLDivElement | null>(null);
   const scrollRef2 = useRef<HTMLDivElement | null>(null);
@@ -38,9 +40,7 @@ const Home = () => {
   const [showRightArrow2, setShowRightArrow2] = useState(true);
 
   const isMobile = useBreakpointValue({ base: true, md: false });
-  const hoverScale = useBreakpointValue({ base: 1.1, md: 1.4 }); // mobile scale smaller
-
-  const navigate = useNavigate(); // ✅ hook router
+  const navigate = useNavigate();
 
   const handleScroll = (
     ref: React.RefObject<HTMLDivElement | null>,
@@ -97,7 +97,7 @@ const Home = () => {
     };
   }, []);
 
-  // ===== GENERIC FETCH FUNCTION =====
+  // ✅ Fetch data API
   const fetchData = async (
     endpoint: string,
     setter: (data: MediaItem[]) => void,
@@ -108,7 +108,6 @@ const Home = () => {
         `${import.meta.env.VITE_BACKEND_URL}/api/${endpoint}`
       );
       let data: MediaItem[] = await res.json();
-
       data = data.filter((item) => item.name !== ".emptyFolderPlaceholder");
       setter(data);
     } catch (err) {
@@ -118,7 +117,6 @@ const Home = () => {
     }
   };
 
-  // ===== FETCH DATA =====
   useEffect(() => {
     fetchData("how-to-use", setHowToUse, setLoadingHowToUse);
     fetchData("products", setProducts, setLoadingProducts);
@@ -140,6 +138,9 @@ const Home = () => {
     "Tampak Bawah",
   ];
 
+  const handleZoomIn = (url: string) => setSelectedImage(url);
+
+  // ✅ Render List
   const renderHorizontalList = (
     items: MediaItem[],
     titlePrefix: string,
@@ -150,7 +151,7 @@ const Home = () => {
     setShowRightArrow: (val: boolean) => void,
     isLoading: boolean = false
   ) => (
-    <Flex mt={4} position="relative" align="center" minH="340px">
+    <Flex mt={4} position="relative" align="center" minH="360px">
       {showLeftArrow && !isLoading && (
         <IconButton
           aria-label="Scroll Left"
@@ -202,7 +203,6 @@ const Home = () => {
         ) : (
           items.map((item, index) => {
             let titleText = `${titlePrefix} ${index + 1}`;
-
             if (titlePrefix === "Step" && stepTitles[index]) {
               titleText = stepTitles[index];
             } else if (titlePrefix === "Product" && productTitles[index]) {
@@ -222,19 +222,17 @@ const Home = () => {
                 p={4}
                 borderLeft="5px solid white"
                 minH="320px"
+                position="relative"
               >
                 <Heading fontSize="lg" color="white" mb={2}>
                   {titleText}
                 </Heading>
-                {/* Kotak image dengan efek hover */}
+
                 <Box
+                  position="relative"
                   textAlign="center"
                   overflow="hidden"
                   borderRadius="8px"
-                  transition="transform 0.3s ease"
-                  _hover={{
-                    transform: `scale(${hoverScale})`,
-                  }}
                 >
                   <img
                     src={item.url}
@@ -244,8 +242,24 @@ const Home = () => {
                       height: "220px",
                       objectFit: "cover",
                       borderRadius: "8px",
+                      transition: "transform 0.3s ease",
                     }}
                   />
+
+                  {/* Tombol Zoom di pojok kiri atas */}
+                  <IconButton
+                    aria-label="Zoom In"
+                    size="sm"
+                    colorScheme="orange"
+                    variant="solid"
+                    position="absolute"
+                    top="8px"
+                    left="8px"
+                    borderRadius="full"
+                    onClick={() => handleZoomIn(item.url)}
+                  >
+                    <FiZoomIn />
+                  </IconButton>
                 </Box>
               </Box>
             );
@@ -274,13 +288,7 @@ const Home = () => {
 
   return (
     <PageTransition>
-      <Box
-        p={3}
-        pl={{ base: 10, md: 4 }}
-        position="relative"
-        bg="#242424"
-        color="white"
-      >
+      <Box p={3} pl={{ base: 10, md: 4 }} bg="#242424" color="white">
         <Heading fontSize={{ base: "2xl", md: "4xl" }} fontWeight="bold">
           Selamat Datang di Vision Medicine!
         </Heading>
@@ -297,11 +305,7 @@ const Home = () => {
           boxShadow="lg"
           color="black"
         >
-          <Heading
-            fontSize={{ base: "lg", md: "xl" }}
-            color="orange.400"
-            fontWeight="bold"
-          >
+          <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
             How to Use ?
           </Heading>
           {renderHorizontalList(
@@ -316,7 +320,7 @@ const Home = () => {
           )}
         </Box>
 
-        {/* Live Stream Box */}
+        {/* Live Stream */}
         <Box
           mt={8}
           bg="rgba(255,255,255,0.9)"
@@ -326,7 +330,7 @@ const Home = () => {
           textAlign="center"
           cursor="pointer"
           color="black"
-          onClick={() => navigate("/livestream")} // ✅ klik -> redirect
+          onClick={() => navigate("/livestream")}
           _hover={{
             bg: "orange.500",
             color: "white",
@@ -346,11 +350,7 @@ const Home = () => {
           boxShadow="lg"
           color="black"
         >
-          <Heading
-            fontSize={{ base: "lg", md: "xl" }}
-            color="orange.400"
-            fontWeight="bold"
-          >
+          <Heading fontSize={{ base: "lg", md: "xl" }} color="orange.400">
             Our Product
           </Heading>
           {renderHorizontalList(
@@ -365,6 +365,32 @@ const Home = () => {
           )}
         </Box>
       </Box>
+
+      {/* ✅ Overlay Popup — klik di mana pun buat close */}
+      {selectedImage && (
+        <Box
+          position="fixed"
+          top={0}
+          left={0}
+          w="100vw"
+          h="100vh"
+          bg="rgba(0,0,0,0.85)"
+          backdropFilter="blur(8px)"
+          zIndex={9999}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          onClick={() => setSelectedImage(null)} // ✅ klik di mana pun = close
+        >
+          <Image
+            src={selectedImage}
+            maxH="90vh"
+            maxW="90vw"
+            borderRadius="lg"
+            boxShadow="2xl"
+          />
+        </Box>
+      )}
     </PageTransition>
   );
 };

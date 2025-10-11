@@ -28,15 +28,34 @@ from datetime import date
 import RPi.GPIO as GPIO
 
 # ===============================
-# LOAD ENV
+# LOAD ENV + AUTO REFRESH
 # ===============================
-load_dotenv()
-API_TOKEN = os.getenv("API_TOKEN", "vismed-raspberry123")
-YOLO_MODEL = os.getenv("YOLO_MODEL", "best_tuned.pt")
-OBAT_CSV = os.getenv("OBAT_CSV", "Data Obat - 70 Obat.csv")
+def load_env_vars():
+    """Load environment variables dari .env"""
+    load_dotenv(override=True)
+    globals()["API_TOKEN"] = os.getenv("API_TOKEN")
+    globals()["YOLO_MODEL"] = os.getenv("YOLO_MODEL")
+    globals()["OBAT_CSV"] = os.getenv("OBAT_CSV")
+    globals()["WEBHOOK_NORMAL"] = os.getenv("WEBHOOK_NORMAL")
+    globals()["WEBHOOK_REMINDER"] = os.getenv("WEBHOOK_REMINDER")
 
-WEBHOOK_NORMAL = "https://aef24d44b22f.ngrok-free.app/webhook/chat-input"
-WEBHOOK_REMINDER = "https://aef24d44b22f.ngrok-free.app/webhook/vismed-reminder"
+    print("🔄 ENV Reloaded:")
+    print(f"   API_TOKEN={API_TOKEN}")
+    print(f"   YOLO_MODEL={YOLO_MODEL}")
+    print(f"   OBAT_CSV={OBAT_CSV}")
+    print(f"   WEBHOOK_NORMAL={WEBHOOK_NORMAL}")
+    print(f"   WEBHOOK_REMINDER={WEBHOOK_REMINDER}")
+
+# first load
+load_env_vars()
+
+# refresher thread
+def env_refresher():
+    while True:
+        time.sleep(30)  # reload tiap 30 detik
+        load_env_vars()
+
+threading.Thread(target=env_refresher, daemon=True).start()
 
 # ===============================
 # YOLO MODEL
@@ -93,6 +112,7 @@ print(f"👉 Pakai mic index {MIC_DEVICE}: {mic_list[MIC_DEVICE]}")
 # GLOBAL FLAG
 # ===============================
 session_active = False
+ultrasonic_active = True   # ✅ Flag global untuk ultrasonic
 
 # ===============================
 # GPIO Ultrasonic Config
@@ -237,7 +257,7 @@ frame_count = 0
 last_frame = None
 
 def camera_loop():
-    global frame_count, session_active, last_warning_time, last_frame
+    global frame_count, session_active, last_warning_time, last_frame, ultrasonic_active
     while True:
         try:
             frame = picam2.capture_array()
@@ -299,8 +319,8 @@ def camera_loop():
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.6, box_color, 2)
 
-        # ✅ ultrasonic check
-        if boxes_exist:
+        # ✅ ultrasonic check (hanya aktif jika ultrasonic_active True)
+        if ultrasonic_active and boxes_exist:
             distance = get_distance()
             print(f"📏 Jarak: {distance:.2f} cm")
 
@@ -322,14 +342,20 @@ def camera_loop():
             avg_scores = {obat: sum(scores)/len(scores) for obat, scores in score_map.items()}
             best_obat, best_score = max(avg_scores.items(), key=lambda x: x[1])
 
-            print(f"💊 Obat dipilih: {best_obat} (avg {best_score:.2f}%) dari {len(detected_obats)} deteksi")
+            print(f"💊 Obat kandidat: {best_obat} (avg {best_score:.2f}%) dari {len(detected_obats)} deteksi")
 
-            time.sleep(5)  # ⏳ delay 3 detik
+            if best_score >= 60:
+                detection_sound = "Obat Terdeteksi. Mohon Tunggu Beberapa Saat.mp3"
+                if os.path.exists(os.path.join("sounds", detection_sound)):
+                    safe_play_warning(detection_sound)
+                else:
+                    print(f"[Missing Sound] sounds/{detection_sound} tidak ditemukan.")
 
-            info_text = f"Berikan Informasi Obat {best_obat}"
-            response_text = send_to_webhook(WEBHOOK_NORMAL, "System", info_text)
-            if response_text:
-                text2speech_play(response_text)
+                time.sleep(3)
+                info_text = f"Berikan Informasi Obat {best_obat}"
+                response_text = send_to_webhook(WEBHOOK_NORMAL, "System", info_text)
+                if response_text:
+                    text2speech_play(response_text)
 
         frame_count += 1
         ret, buffer = cv2.imencode('.jpg', frame)
@@ -370,7 +396,7 @@ def chat_input():
 # MAIN VOICE ASSISTANT LOOP
 # ===============================
 def main():
-    global session_active
+    global session_active, ultrasonic_active
     rec = sr.Recognizer()
     slang = "id-ID"
     mic = sr.Microphone(device_index=MIC_DEVICE)
@@ -397,15 +423,16 @@ def main():
                     if any(text.startswith(w) for w in WAKE_WORDS):
                         print("[Wake Word Detected] Normal session started!")
                         session_active = True
+                        ultrasonic_active = False
                         current_webhook = WEBHOOK_NORMAL
                         text2speech_play("Halo, vismed di sini. Ada yang bisa dibantu?")
                         continue
                     elif text.startswith(REMINDER_WAKE_WORD):
                         print("[Wake Word Detected] Reminder session started!")
                         session_active = True
+                        ultrasonic_active = False
                         reminder_mode = True
                         text2speech_play("Oke, mari kita buat pengingat.")
-                        print("[Reminder Mode] Awaiting next input for reminder...")
                         continue
                     else:
                         continue
@@ -413,6 +440,7 @@ def main():
                 if not reminder_mode and END_WORD in text:
                     text2speech_play("Sama sama kak")
                     session_active = False
+                    ultrasonic_active = True
                     current_webhook = WEBHOOK_NORMAL
                     continue
 
@@ -423,6 +451,7 @@ def main():
                     print("[Reminder session ended]")
                     session_active = False
                     reminder_mode = False
+                    ultrasonic_active = True
                     current_webhook = WEBHOOK_NORMAL
                     continue
                 else:

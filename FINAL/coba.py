@@ -93,6 +93,7 @@ print(f"👉 Pakai mic index {MIC_DEVICE}: {mic_list[MIC_DEVICE]}")
 # GLOBAL FLAG
 # ===============================
 session_active = False
+ultrasonic_active = True   # ✅ Flag global untuk ultrasonic
 
 # ===============================
 # GPIO Ultrasonic Config
@@ -237,7 +238,7 @@ frame_count = 0
 last_frame = None
 
 def camera_loop():
-    global frame_count, session_active, last_warning_time, last_frame
+    global frame_count, session_active, last_warning_time, last_frame, ultrasonic_active
     while True:
         try:
             frame = picam2.capture_array()
@@ -299,8 +300,8 @@ def camera_loop():
                             cv2.FONT_HERSHEY_SIMPLEX,
                             0.6, box_color, 2)
 
-        # ✅ ultrasonic check
-        if boxes_exist:
+        # ✅ ultrasonic check (hanya aktif jika ultrasonic_active True)
+        if ultrasonic_active and boxes_exist:
             distance = get_distance()
             print(f"📏 Jarak: {distance:.2f} cm")
 
@@ -382,7 +383,7 @@ def chat_input():
 # MAIN VOICE ASSISTANT LOOP
 # ===============================
 def main():
-    global session_active
+    global session_active, ultrasonic_active
     rec = sr.Recognizer()
     slang = "id-ID"
     mic = sr.Microphone(device_index=MIC_DEVICE)
@@ -409,12 +410,14 @@ def main():
                     if any(text.startswith(w) for w in WAKE_WORDS):
                         print("[Wake Word Detected] Normal session started!")
                         session_active = True
+                        ultrasonic_active = False   # ✅ Matikan ultrasonic pas voice mode
                         current_webhook = WEBHOOK_NORMAL
                         text2speech_play("Halo, vismed di sini. Ada yang bisa dibantu?")
                         continue
                     elif text.startswith(REMINDER_WAKE_WORD):
                         print("[Wake Word Detected] Reminder session started!")
                         session_active = True
+                        ultrasonic_active = False   # ✅ Matikan ultrasonic pas voice mode
                         reminder_mode = True
                         text2speech_play("Oke, mari kita buat pengingat.")
                         print("[Reminder Mode] Awaiting next input for reminder...")
@@ -425,6 +428,7 @@ def main():
                 if not reminder_mode and END_WORD in text:
                     text2speech_play("Sama sama kak")
                     session_active = False
+                    ultrasonic_active = True   # ✅ Hidupkan lagi ultrasonic setelah selesai
                     current_webhook = WEBHOOK_NORMAL
                     continue
 
@@ -435,6 +439,7 @@ def main():
                     print("[Reminder session ended]")
                     session_active = False
                     reminder_mode = False
+                    ultrasonic_active = True   # ✅ Hidupkan lagi ultrasonic setelah selesai
                     current_webhook = WEBHOOK_NORMAL
                     continue
                 else:
