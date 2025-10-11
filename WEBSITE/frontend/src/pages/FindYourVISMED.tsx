@@ -6,6 +6,16 @@ import PageTransition from "@/components/layouts/PageTransition";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+// =========================
+// Fix path marker Leaflet
+// =========================
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "/assets/leaflet/images/marker-icon-2x.png",
+  iconUrl: "/assets/leaflet/images/marker-icon.png",
+  shadowUrl: "/assets/leaflet/images/marker-shadow.png",
+});
+
 declare global {
   interface Window {
     google: any;
