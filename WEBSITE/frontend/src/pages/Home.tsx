@@ -7,7 +7,12 @@ import {
   useBreakpointValue,
   Image,
 } from "@chakra-ui/react";
-import { FiChevronRight, FiChevronLeft, FiZoomIn } from "react-icons/fi";
+import {
+  FiChevronRight,
+  FiChevronLeft,
+  FiZoomIn,
+  FiVideo,
+} from "react-icons/fi";
 import { useRef, useState, useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { useNavigate } from "react-router-dom";
@@ -356,9 +361,15 @@ const Home = () => {
               boxShadow: "0 12px 30px rgba(255,165,0,0.3)",
             }}
           >
-            <Heading fontSize={{ base: "17px", md: "2xl" }}>
-              ===📸 Live Stream Detection 📸===
-            </Heading>
+            <Flex justify="center" align="center" gap={2}>
+              <FiVideo size={24} color="#FFA500" />
+              <Heading
+                fontSize={{ base: "17px", md: "2xl" }}
+                color="orange.300"
+              >
+                Live Stream Detection
+              </Heading>
+            </Flex>
           </Box>
 
           {/* Our Product */}
