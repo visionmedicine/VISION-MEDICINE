@@ -1,7 +1,7 @@
 // src/pages/FindYourVISMED.tsx
 import { useEffect, useRef } from "react";
-import { Box, Flex, Text, VStack, HStack } from "@chakra-ui/react";
-import { FiMapPin, FiMap } from "react-icons/fi";
+import { Box, Flex, Text, VStack, HStack, Heading } from "@chakra-ui/react";
+import { FiMapPin, FiMap, FiBell, FiCrosshair } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -123,74 +123,107 @@ const FindYourVISMED = () => {
       <Flex
         direction="column"
         minH="100dvh"
-        maxH="100dvh"
         w="100%"
-        // ❌ bg dihapus agar tidak bertumpuk dengan App.css dan index.css
-        p={{ base: 2, md: 4 }}
+        p={{ base: 3, md: 5 }}
+        color="white"
+        position="relative"
         overflow="hidden"
+        justify="flex-start"
+        pt={{ base: 4, md: 6 }} // 🔼 konten agak ke atas
       >
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="center"
-          bg="#2f2f2f"
-          px={{ base: 3, md: 4 }}
-          py={{ base: 2, md: 3 }}
-          borderBottom="4px solid"
-          borderColor="gray.600"
-          boxShadow="sm"
+        {/* Header dengan gaya glassmorphism */}
+        <Box
+          position="relative"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
           borderRadius="2xl"
+          p={{ base: 5, md: 6 }}
+          mb={6}
+          bg="rgba(255, 255, 255, 0.15)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.25)"
+          backdropFilter="blur(14px) saturate(180%)"
+          border="1px solid rgba(255, 255, 255, 0.2)"
+          transition="all 0.3s ease"
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: "0 12px 36px rgba(255,165,0,0.25)",
+          }}
+          mt={{ base: -1, md: -2 }} // 🔼 dinaikkan sedikit
         >
-          <HStack gap={2}>
-            <FiMapPin size={24} color="white" />
-            <Text
-              fontSize={{ base: "lg", md: "xl" }}
-              fontWeight="bold"
-              color="white"
+          <HStack justify="center" gap={3}>
+            <FiMapPin size={28} color="#FFA500" />
+            <Heading
+              fontSize={{ base: "2xl", md: "3xl" }}
+              bgGradient="linear(to-r, orange.300, yellow.400)"
+              bgClip="text"
+              fontWeight="extrabold"
+              letterSpacing="wide"
+              color="rgba(255,255,255,0.85)"
             >
               Find Your VISMED
-            </Text>
+            </Heading>
           </HStack>
-        </Flex>
+          <Text
+            mt={3}
+            fontSize={{ base: "md", md: "lg" }}
+            textAlign="center"
+            color="rgba(255,255,255,0.85)"
+            maxW="90%"
+          >
+            Temukan lokasi Vision Medicine secara real-time di peta interaktif
+          </Text>
+        </Box>
 
-        {/* Maps */}
+        {/* Peta */}
         <Box
           ref={mapContainerRef}
           flex="1"
-          bg="gray.300"
-          m={{ base: 2, md: 4 }}
           borderRadius="2xl"
-          fontSize={{ base: "sm", md: "lg" }}
-          color="black"
+          border="1px solid rgba(255,255,255,0.15)"
+          boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          backdropFilter="blur(10px)"
+          overflow="hidden"
+          bg="rgba(255,255,255,0.08)"
+          position="relative"
+          mt={{ base: -1, md: -2 }} // 🔼 peta agak dinaikkan
         />
 
-        {/* Bottom Buttons */}
+        {/* Tombol kontrol bawah */}
         <Flex
-          p={{ base: 3, md: 4 }}
-          bg="#2f2f2f"
+          mt={{ base: 3, md: 4 }} // 🔼 jarak bawah dikurangi agar naik sedikit
+          mb={{ base: 2, md: 3 }} // 🔼 beri sedikit margin bawah supaya tidak terlalu ke tepi layar
+          bg="rgba(255,255,255,0.12)"
+          backdropFilter="blur(16px)"
+          border="1px solid rgba(255,255,255,0.15)"
           borderRadius="2xl"
-          borderTop="4px solid"
-          borderColor="gray.600"
-          justify="space-between"
+          boxShadow="0 8px 24px rgba(255,165,0,0.2)"
+          p={{ base: 3, md: 4 }}
+          justify="space-around"
           align="center"
-          mb={{ base: 3, md: 5 }}
+          flexWrap="wrap"
+          gap={3}
         >
           {/* Direction */}
           <Box
             onClick={handleDirection}
             flex="1"
+            minW="100px"
             mx={1}
-            bg="teal.600"
-            color="white"
             textAlign="center"
             py={{ base: 3, md: 4 }}
             borderRadius="xl"
             cursor="pointer"
-            transition="0.2s"
-            _hover={{ bg: "teal.700" }}
+            bg="rgba(255,165,0,0.25)"
+            _hover={{
+              transform: "scale(1.05)",
+              boxShadow: "0 8px 24px rgba(255,165,0,0.3)",
+            }}
+            transition="all 0.2s ease"
           >
             <VStack gap={1}>
-              <FiMap size={20} />
+              <FiMap size={22} />
               <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
                 Direction
               </Text>
@@ -201,18 +234,22 @@ const FindYourVISMED = () => {
           <Box
             onClick={handleBell}
             flex="1"
+            minW="100px"
             mx={1}
-            bg="#445775"
-            color="white"
             textAlign="center"
             py={{ base: 3, md: 4 }}
             borderRadius="xl"
             cursor="pointer"
-            transition="0.2s"
-            _hover={{ bg: "#5a6f91" }}
+            bg="rgba(68,87,117,0.6)"
+            _hover={{
+              transform: "scale(1.05)",
+              boxShadow: "0 8px 24px rgba(255,165,0,0.3)",
+              bg: "rgba(68,87,117,0.8)",
+            }}
+            transition="all 0.2s ease"
           >
             <VStack gap={1}>
-              <Text fontSize={{ base: "lg", md: "xl" }}>🔔</Text>
+              <FiBell size={22} />
               <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
                 Bell
               </Text>
@@ -223,18 +260,22 @@ const FindYourVISMED = () => {
           <Box
             onClick={handleLocation}
             flex="1"
+            minW="100px"
             mx={1}
-            bg="purple.600"
-            color="white"
             textAlign="center"
             py={{ base: 3, md: 4 }}
             borderRadius="xl"
             cursor="pointer"
-            transition="0.2s"
-            _hover={{ bg: "purple.700" }}
+            bg="rgba(128,90,213,0.3)"
+            _hover={{
+              transform: "scale(1.05)",
+              boxShadow: "0 8px 24px rgba(255,165,0,0.3)",
+              bg: "rgba(128,90,213,0.4)",
+            }}
+            transition="all 0.2s ease"
           >
             <VStack gap={1}>
-              <FiMapPin size={20} />
+              <FiCrosshair size={22} />
               <Text fontWeight="bold" fontSize={{ base: "sm", md: "md" }}>
                 Location
               </Text>
