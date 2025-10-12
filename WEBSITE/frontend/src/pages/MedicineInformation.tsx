@@ -8,12 +8,13 @@ import {
   Text,
   HStack,
   SimpleGrid,
+  Heading,
+  Icon,
 } from "@chakra-ui/react";
 import { Collapse } from "@chakra-ui/transition";
 import { keyframes } from "@emotion/react";
 import {
   FaPills,
-  FaSearch,
   FaTimes,
   FaChevronDown,
   FaChevronUp,
@@ -155,50 +156,94 @@ const MedicineInformation = () => {
       <Flex
         direction="column"
         minH="100dvh"
-        maxH="100dvh"
         w="100%"
-        p={{ base: 2, md: 4 }}
+        p={{ base: 3, md: 5 }}
+        color="white"
+        position="relative"
         overflow="hidden"
+        justify="flex-start"
+        pt={{ base: 4, md: 6 }}
       >
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="center"
-          bg="#2f2f2f"
-          px={{ base: 3, md: 4 }}
-          py={{ base: 2, md: 3 }}
-          borderBottom="4px solid"
-          borderColor="gray.600"
+        {/* Header dengan gaya glassmorphism */}
+        <Box
+          position="relative"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          w="full"
           borderRadius="2xl"
+          p={{ base: 5, md: 6 }}
+          mb={6}
+          bg="rgba(255, 255, 255, 0.15)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.25)"
+          backdropFilter="blur(14px) saturate(180%)"
+          border="1px solid rgba(255, 255, 255, 0.2)"
+          transition="all 0.3s ease"
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: "0 12px 36px rgba(255,165,0,0.25)",
+          }}
+          mt={{ base: 0, md: -2 }}
         >
-          <HStack gap={2}>
-            <FaPills size={24} color="white" />
-            <Text
-              fontSize={{ base: "lg", md: "xl" }}
-              fontWeight="bold"
-              color="white"
+          <Flex
+            justify="center"
+            align="center"
+            gap={3}
+            flexWrap="wrap"
+            w="full"
+          >
+            <Icon as={FaPills} boxSize={{ base: 6, md: 10 }} color="#FFA500" />
+            <Heading
+              textAlign="center"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              bgGradient="linear(to-r, orange.300, yellow.400)"
+              bgClip="text"
+              fontWeight="extrabold"
+              letterSpacing="wide"
+              color="rgba(255,255,255,0.85)"
+              w="auto"
             >
               Medicine Information
-            </Text>
-          </HStack>
-        </Flex>
+            </Heading>
+          </Flex>
+          <Text
+            mt={3}
+            fontSize={{ base: "md", md: "lg" }}
+            textAlign="center"
+            color="rgba(255,255,255,0.85)"
+            maxW="90%"
+          >
+            Cari informasi obat dengan cepat
+          </Text>
+        </Box>
 
         {/* Medicine List */}
         <Box
           ref={containerRef}
           flex="1"
-          overflowY="auto"
+          borderRadius="2xl"
+          border="1px solid rgba(255,255,255,0.15)"
+          boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          backdropFilter="blur(10px)"
+          overflow="hidden"
+          bg="rgba(255,255,255,0.08)"
+          position="relative"
+          mb={4}
           p={{ base: 3, md: 4 }}
+          maxH="calc(100vh - 300px)"
+          overflowY="auto"
         >
           {loading ? (
             <Flex
               justify="center"
               align="center"
               w="100%"
-              minH="calc(100dvh - 160px)" // tinggi header + input area
+              minH="calc(100vh - 300px)"
               gap={2}
               role="status"
               aria-label="Memuat data obat"
+              color="white"
             >
               {[0, 1, 2].map((i) => (
                 <Box
@@ -206,7 +251,7 @@ const MedicineInformation = () => {
                   w="12px"
                   h="12px"
                   borderRadius="full"
-                  bg="white"
+                  bg="#FFA500"
                   animation={`${wave} 1s ease-in-out infinite`}
                   animationDelay={`${i * 0.2}s`}
                 />
@@ -225,26 +270,30 @@ const MedicineInformation = () => {
                 return (
                   <Box
                     key={keyId}
-                    bg="#445775"
+                    bg="rgba(255,255,255,0.08)"
                     color="white"
-                    borderRadius="2xl"
-                    boxShadow="md"
+                    px={{ base: 3, md: 4 }}
+                    py={{ base: 3, md: 3 }}
+                    borderRadius="xl"
+                    boxShadow="sm"
                     display="flex"
                     flexDirection="column"
                     transition="all 0.2s"
+                    border="1px solid rgba(255,255,255,0.2)"
+                    backdropFilter="blur(10px)"
                     _hover={{
-                      boxShadow: "lg",
+                      boxShadow: "0 8px 24px rgba(255,165,0,0.25)",
                       transform: "translateY(-2px)",
                     }}
                   >
                     <HStack
-                      px={{ base: 3, md: 4 }}
-                      py={{ base: 2, md: 3 }}
                       cursor="pointer"
                       justify="space-between"
-                      borderBottom={isOpen ? "1px solid" : "none"}
-                      borderColor="gray.600"
+                      borderBottom={
+                        isOpen ? "1px solid rgba(255,255,255,0.2)" : "none"
+                      }
                       onClick={() => toggleDropdown(keyId, column)}
+                      mb={isOpen ? 3 : 0}
                     >
                       <Text
                         fontWeight="bold"
@@ -252,17 +301,15 @@ const MedicineInformation = () => {
                       >
                         {capitalizeWords(med.name)}
                       </Text>
-                      {isOpen ? <FaChevronUp /> : <FaChevronDown />}
+                      {isOpen ? (
+                        <FaChevronUp color="#FFA500" />
+                      ) : (
+                        <FaChevronDown color="#FFA500" />
+                      )}
                     </HStack>
 
                     <Collapse in={isOpen} animateOpacity>
-                      <Box
-                        px={{ base: 3, md: 4 }}
-                        py={{ base: 2, md: 3 }}
-                        bg="gray.700"
-                        borderRadius="0 0 2xl 2xl"
-                        fontSize={{ base: "sm", md: "md" }}
-                      >
+                      <Box fontSize={{ base: "sm", md: "md" }}>
                         <Text mb={2}>
                           <strong>Kandungan:</strong> {med.kandungan}
                         </Text>
@@ -286,10 +333,10 @@ const MedicineInformation = () => {
               justify="center"
               align="center"
               w="100%"
-              minH="calc(100dvh - 160px)"
+              minH="calc(100vh - 300px)"
             >
               <Text
-                color="white"
+                color="rgba(255,255,255,0.85)"
                 textAlign="center"
                 fontSize={{ base: "md", md: "lg" }}
               >
@@ -301,79 +348,68 @@ const MedicineInformation = () => {
 
         {/* Input Area */}
         <Box
-          borderTop="4px solid"
-          borderColor="gray.600"
-          p={{ base: 2, md: 3 }}
-          bg="#2f2f2f"
-          position="sticky"
-          bottom={{ base: "9px", md: "12px" }}
+          borderTop="1px solid rgba(255,255,255,0.15)"
+          p={{ base: 3, md: 4 }}
+          bg="rgba(255,255,255,0.12)"
+          backdropFilter="blur(16px)"
+          border="1px solid rgba(255,255,255,0.15)"
           borderRadius="2xl"
+          boxShadow="0 8px 24px rgba(255,165,0,0.2)"
+          position="relative"
           zIndex={100}
         >
+          {/* Mic button */}
           <IconButton
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme={listening ? "red" : "blue"}
+            colorScheme={listening ? "red" : "orange"}
             position="absolute"
-            left={{ base: "6px", md: "10px" }}
+            left={{ base: "10px", md: "20px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
             onClick={handleMicClick}
             bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-            _focus={{ boxShadow: "none", bg: "transparent" }}
+            _hover={{ bg: "rgba(255,165,0,0.2)" }}
+            _active={{ bg: "rgba(255,165,0,0.3)" }}
+            _focus={{ boxShadow: "none", bg: "rgba(255,165,0,0.2)" }}
           >
-            <FaMicrophone size={16} />
+            <FaMicrophone size={18} />
           </IconButton>
 
+          {/* Input */}
           <Input
             placeholder="Cari nama obat..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            pl={{ base: "35px", md: "40px" }}
-            pr={{ base: "90px", md: "110px" }}
+            pl={{ base: "40px", md: "50px" }}
+            pr={{ base: "35px", md: "40px" }}
             color="black"
-            bg="white"
+            bg="rgba(255,255,255,0.9)"
             borderRadius="2xl"
             fontSize={{ base: "sm", md: "md" }}
+            border="1px solid rgba(255,255,255,0.3)"
+            _placeholder={{ color: "gray.500" }}
+            _focus={{ boxShadow: "0 0 0 1px rgba(255,165,0,0.5)" }}
           />
 
-          <IconButton
-            aria-label="Search"
-            size={{ base: "sm", md: "md" }}
-            variant="ghost"
-            colorScheme="blue"
-            position="absolute"
-            right={{ base: "35px", md: "50px" }}
-            top="50%"
-            transform="translateY(-50%)"
-            zIndex="1"
-            bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-            _focus={{ boxShadow: "none", bg: "transparent" }}
-          >
-            <FaSearch size={18} />
-          </IconButton>
-
+          {/* Reset button */}
           <IconButton
             aria-label="Reset"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme="blue"
+            colorScheme="orange"
             onClick={handleReset}
             position="absolute"
-            right={{ base: "6px", md: "8px" }}
+            right={{ base: "10px", md: "20px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
             bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-            _focus={{ boxShadow: "none", bg: "transparent" }}
+            _hover={{ bg: "rgba(255,165,0,0.2)" }}
+            _active={{ bg: "rgba(255,165,0,0.3)" }}
+            _focus={{ boxShadow: "none", bg: "rgba(255,165,0,0.2)" }}
           >
             <FaTimes size={18} />
           </IconButton>

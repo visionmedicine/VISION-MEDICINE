@@ -513,7 +513,7 @@ const Reminder = () => {
                         right: 0,
                         bottom: 0,
                         backgroundColor: reminder.isSet
-                          ? "rgba(255,165,0,0.8)"
+                          ? "rgba(255,165,0,0.65)"
                           : "rgba(255,255,255,0.2)",
                         borderRadius: 34,
                         transition: ".4s",
