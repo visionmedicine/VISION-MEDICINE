@@ -27,8 +27,8 @@ const MobileSidebar: React.FC = () => {
         aria-label="Toggle Menu"
         variant="ghost"
         bg="transparent"
-        _hover={{ bg: "transparent" }}
-        _active={{ bg: "transparent" }}
+        _hover={{ bg: "rgba(255,165,0,0.2)" }}
+        _active={{ bg: "rgba(255,165,0,0.3)" }}
         _focus={{ boxShadow: "none" }}
         display={{ base: "block", md: "none" }}
         pos="fixed"
@@ -57,6 +57,8 @@ const MobileSidebar: React.FC = () => {
           w="100vw"
           h="100vh"
           zIndex={1999}
+          bg="rgba(0,0,0,0.5)"
+          backdropFilter="blur(5px)"
           onClick={onClose}
         />
 
@@ -65,12 +67,16 @@ const MobileSidebar: React.FC = () => {
           position="fixed"
           top={0}
           left={0}
-          bg="white"
+          bg="rgba(255,255,255,0.08)"
           maxW="200px"
           h="100vh"
           display="flex"
           flexDirection="column"
           zIndex={2000}
+          color="white"
+          borderRight="1px solid rgba(255,255,255,0.2)"
+          boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          backdropFilter="blur(10px)"
         >
           <DrawerCloseTrigger
             asChild
@@ -83,12 +89,12 @@ const MobileSidebar: React.FC = () => {
               aria-label="Close Menu"
               variant="ghost"
               bg="transparent"
-              _hover={{ bg: "transparent" }}
-              _active={{ bg: "transparent" }}
+              _hover={{ bg: "rgba(255,165,0,0.2)" }}
+              _active={{ bg: "rgba(255,165,0,0.3)" }}
               _focus={{ boxShadow: "none" }}
               onClick={onClose}
             >
-              <X size={24} strokeWidth={3} color="black" />
+              <X size={24} strokeWidth={3} color="white" />
             </IconButton>
           </DrawerCloseTrigger>
 
@@ -116,19 +122,23 @@ const MobileSidebar: React.FC = () => {
                     onClick={onClose}
                     style={({ isActive }) => ({
                       textDecoration: "none",
-                      backgroundColor: isActive ? "#E2E8F0" : "transparent",
+                      backgroundColor: isActive
+                        ? "rgba(255,165,0,0.25)"
+                        : "transparent",
                       borderRadius: "8px",
                       padding: "8px",
                       display: "flex",
                       alignItems: "center",
                       gap: "8px",
-                      color: "#1A202C",
+                      color: "white",
                       fontWeight: "bold",
                       transition: "background-color 0.2s ease",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      backdropFilter: "blur(10px)",
                     })}
                     className="mobile-sidebar-link"
                   >
-                    <Icon as={item.icon} boxSize={5} color="#1A202C" />
+                    <Icon as={item.icon} boxSize={5} color="white" />
                     <Text>{item.label}</Text>
                   </NavLink>
                 ))}
@@ -141,7 +151,7 @@ const MobileSidebar: React.FC = () => {
       <style>
         {`
           .mobile-sidebar-link:hover {
-            background-color: #E2E8F0 !important;
+            background-color: rgba(255,165,0,0.2) !important;
             border-radius: 8px;
           }
         `}
