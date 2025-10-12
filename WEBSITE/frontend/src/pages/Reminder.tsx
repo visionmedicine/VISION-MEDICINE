@@ -8,6 +8,7 @@ import {
   HStack,
   Input,
   Button,
+  Heading,
 } from "@chakra-ui/react";
 import { FiClock, FiPlus, FiTrash2 } from "react-icons/fi";
 import Select from "react-select";
@@ -42,15 +43,16 @@ const capitalizeWords = (str: string) =>
 const customSelectStyles = {
   control: (provided: any, state: any) => ({
     ...provided,
-    backgroundColor: "white",
+    backgroundColor: "rgba(255,255,255,0.9)",
     color: "black",
     borderRadius: "12px",
-    borderColor: "#E2E8F0",
+    borderColor: "rgba(255,255,255,0.2)",
     minHeight: "38px",
     height: "38px",
     fontSize: "16px",
-    boxShadow: state.isFocused ? "0 0 0 1px #3182CE" : "none",
-    "&:hover": { borderColor: "#3182CE" },
+    boxShadow: state.isFocused ? "0 0 0 1px rgba(255,165,0,0.5)" : "none",
+    "&:hover": { borderColor: "rgba(255,165,0,0.5)" },
+    backdropFilter: "blur(10px)",
   }),
   singleValue: (provided: any) => ({
     ...provided,
@@ -59,22 +61,30 @@ const customSelectStyles = {
   }),
   menu: (provided: any) => ({
     ...provided,
-    backgroundColor: "white",
+    backgroundColor: "rgba(255,255,255,0.9)",
     color: "black",
     borderRadius: "12px",
     overflow: "hidden",
     fontSize: "16px",
+    backdropFilter: "blur(10px)",
+    zIndex: 9999,
+  }),
+  menuPortal: (provided: any) => ({
+    ...provided,
+    zIndex: 9999,
   }),
   option: (provided: any, state: any) => ({
     ...provided,
-    backgroundColor: state.isSelected ? "#FFAE00" : "white",
+    backgroundColor: state.isSelected
+      ? "rgba(255,165,0,0.25)"
+      : "rgba(255,255,255,0.9)",
     color: "black",
     fontSize: "16px",
-    "&:hover": { backgroundColor: "#ffe0a3" },
+    "&:hover": { backgroundColor: "rgba(255,165,0,0.2)" },
   }),
   placeholder: (provided: any) => ({
     ...provided,
-    color: "gray",
+    color: "gray.500",
     fontSize: "16px",
   }),
   input: (provided: any) => ({
@@ -311,36 +321,75 @@ const Reminder = () => {
 
   return (
     <PageTransition>
-      <Flex direction="column" h="100vh" w="100%" p={{ base: 2, md: 4 }}>
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="center"
-          bg="#2f2f2f"
-          px={{ base: 3, md: 4 }}
-          py={{ base: 2, md: 3 }}
-          borderBottom="4px solid"
-          borderColor="gray.600"
-          boxShadow="sm"
+      <Flex
+        direction="column"
+        minH="100dvh"
+        w="100%"
+        p={{ base: 3, md: 5 }}
+        color="white"
+        position="relative"
+        overflow="hidden"
+        justify="flex-start"
+        pt={{ base: 4, md: 6 }}
+      >
+        {/* Header dengan gaya glassmorphism */}
+        <Box
+          position="relative"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
           borderRadius="2xl"
+          p={{ base: 5, md: 6 }}
+          mb={6}
+          bg="rgba(255, 255, 255, 0.15)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.25)"
+          backdropFilter="blur(14px) saturate(180%)"
+          border="1px solid rgba(255, 255, 255, 0.2)"
+          transition="all 0.3s ease"
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: "0 12px 36px rgba(255,165,0,0.25)",
+          }}
+          mt={{ base: -1, md: -2 }}
         >
-          <HStack gap={2}>
-            <FiClock size={24} color="white" />
-            <Text
-              fontSize={{ base: "lg", md: "xl" }}
-              fontWeight="bold"
-              color="white"
+          <HStack justify="center" gap={3}>
+            <FiClock size={28} color="#FFA500" />
+            <Heading
+              fontSize={{ base: "2xl", md: "3xl" }}
+              bgGradient="linear(to-r, orange.300, yellow.400)"
+              bgClip="text"
+              fontWeight="extrabold"
+              letterSpacing="wide"
+              color="rgba(255,255,255,0.85)"
             >
               Reminder
-            </Text>
+            </Heading>
           </HStack>
-        </Flex>
+          <Text
+            mt={3}
+            fontSize={{ base: "md", md: "lg" }}
+            textAlign="center"
+            color="rgba(255,255,255,0.85)"
+            maxW="90%"
+          >
+            Atur jadwal minum obat Anda dengan mudah
+          </Text>
+        </Box>
 
         <Box
           ref={containerRef}
           flex="1"
-          overflowY="auto"
+          borderRadius="2xl"
+          border="1px solid rgba(255,255,255,0.15)"
+          boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          backdropFilter="blur(10px)"
+          overflow="hidden"
+          bg="rgba(255,255,255,0.08)"
+          position="relative"
           p={{ base: 3, md: 4 }}
+          maxH={{ base: "calc(100vh - 200px)", md: "calc(100vh - 200px)" }}
+          overflowY="auto"
         >
           <VStack gap={3} align="stretch">
             {reminders.map((reminder, idx) => (
@@ -350,11 +399,21 @@ const Reminder = () => {
                 w="100%"
                 align="center"
                 flexDirection={{ base: "column", md: "row" }}
-                bg={reminder.isSet ? "#445775" : "#2f2f2f"}
-                p={3}
+                bg={
+                  reminder.isSet
+                    ? "rgba(68,87,117,0.6)"
+                    : "rgba(255,255,255,0.08)"
+                }
+                color="white"
+                px={{ base: 3, md: 4 }}
+                py={{ base: 3, md: 3 }}
                 borderRadius="xl"
-                borderBottom="4px solid"
-                borderColor="gray.600"
+                wordBreak="break-word"
+                whiteSpace="pre-wrap"
+                boxShadow="sm"
+                fontSize={{ base: "sm", md: "md" }}
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255,255,255,0.2)"
               >
                 <Box w={{ base: "100%", md: "25%" }}>
                   <Select
@@ -373,6 +432,7 @@ const Reminder = () => {
                     placeholder="Pilih Obat"
                     isClearable
                     styles={customSelectStyles}
+                    menuPortalTarget={document.body}
                   />
                 </Box>
 
@@ -380,12 +440,14 @@ const Reminder = () => {
                   type="date"
                   value={reminder.date}
                   onChange={(e) => handleDateChange(idx, e.target.value)}
-                  bg="white"
+                  bg="rgba(255,255,255,0.9)"
                   color="black"
                   borderRadius="12px"
                   fontSize="md"
-                  borderColor="gray.200"
+                  border="1px solid rgba(255,255,255,0.3)"
                   w={{ base: "100%", md: "20%" }}
+                  _placeholder={{ color: "gray.500" }}
+                  _focus={{ boxShadow: "0 0 0 1px rgba(255,165,0,0.5)" }}
                 />
 
                 <Input
@@ -393,13 +455,15 @@ const Reminder = () => {
                   inputMode="numeric"
                   value={reminder.hour}
                   onChange={(e) => handleHourChange(idx, e.target.value)}
-                  bg="white"
+                  bg="rgba(255,255,255,0.9)"
                   color="black"
                   borderRadius="12px"
                   fontSize="md"
-                  borderColor="gray.200"
+                  border="1px solid rgba(255,255,255,0.3)"
                   w={{ base: "100%", md: "18%" }}
                   placeholder="Jam (0-23)"
+                  _placeholder={{ color: "gray.500" }}
+                  _focus={{ boxShadow: "0 0 0 1px rgba(255,165,0,0.5)" }}
                 />
 
                 <Input
@@ -407,13 +471,15 @@ const Reminder = () => {
                   inputMode="numeric"
                   value={reminder.minute}
                   onChange={(e) => handleMinuteChange(idx, e.target.value)}
-                  bg="white"
+                  bg="rgba(255,255,255,0.9)"
                   color="black"
                   borderRadius="12px"
                   fontSize="md"
-                  borderColor="gray.200"
+                  border="1px solid rgba(255,255,255,0.3)"
                   w={{ base: "100%", md: "18%" }}
                   placeholder="Menit (0-59)"
+                  _placeholder={{ color: "gray.500" }}
+                  _focus={{ boxShadow: "0 0 0 1px rgba(255,165,0,0.5)" }}
                 />
 
                 {/* Toggle & Delete */}
@@ -446,9 +512,12 @@ const Reminder = () => {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        backgroundColor: reminder.isSet ? "#FFAE00" : "#ccc",
+                        backgroundColor: reminder.isSet
+                          ? "rgba(255,165,0,0.8)"
+                          : "rgba(255,255,255,0.2)",
                         borderRadius: 34,
                         transition: ".4s",
+                        border: "1px solid rgba(255,255,255,0.2)",
                       }}
                     ></span>
                     <span
@@ -480,12 +549,17 @@ const Reminder = () => {
 
             <Button
               onClick={handleAdd}
-              bg="green.600"
+              bg="rgba(255,165,0,0.25)"
               color="white"
               borderRadius="xl"
               size="sm"
               w={{ base: "100%", md: "fit-content" }}
-              _hover={{ bg: "green.500" }}
+              border="1px solid rgba(255,255,255,0.2)"
+              _hover={{
+                bg: "rgba(255,165,0,0.35)",
+                boxShadow: "0 8px 24px rgba(255,165,0,0.25)",
+              }}
+              backdropFilter="blur(10px)"
             >
               <FiPlus style={{ marginRight: 6 }} /> Add
             </Button>
