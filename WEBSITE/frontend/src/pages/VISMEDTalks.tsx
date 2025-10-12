@@ -235,7 +235,7 @@ const VISMEDTalks = () => {
             color="rgba(255,255,255,0.85)"
             maxW="90%"
           >
-            Bercakap dengan Vision Medicine secara real-time menggunakan AI
+            Ngobrol seru dengan VISMED, asisten AI yang siap membantu
           </Text>
         </Box>
 
