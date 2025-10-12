@@ -59,10 +59,29 @@ export default function LiveStream() {
 
   return (
     <PageTransition>
-      <Box p={6} pt={3} minH="100vh">
+      <Box
+        p={6}
+        pt={3}
+        minH="100vh"
+        bg="rgba(255,255,255,0.08)"
+        color="white"
+        position="relative"
+        boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+        backdropFilter="blur(10px)"
+        border="1px solid rgba(255,255,255,0.15)"
+        borderRadius="2xl"
+      >
         {/* Heading selalu di atas */}
         <Flex direction="column" align="center" mb={6}>
-          <Heading size="2xl">Live Stream Detection</Heading>
+          <Heading
+            size="2xl"
+            bgGradient="linear(to-r, orange.300, yellow.400)"
+            bgClip="text"
+            fontWeight="extrabold"
+            color="rgba(255,255,255,0.85)"
+          >
+            Live Stream Detection
+          </Heading>
         </Flex>
 
         {!isConnected ? (
@@ -84,10 +103,18 @@ export default function LiveStream() {
               fontWeight="bold"
               onClick={handleConnect}
               shadow="md"
+              bg="rgba(255,165,0,0.25)"
+              color="white"
+              border="1px solid rgba(255,255,255,0.2)"
+              _hover={{
+                bg: "rgba(255,165,0,0.35)",
+                boxShadow: "0 8px 24px rgba(255,165,0,0.25)",
+              }}
+              backdropFilter="blur(10px)"
             >
               CONNECT
             </Button>
-            <Text fontSize="sm" color="gray.400" mt={1}>
+            <Text fontSize="sm" color="rgba(255,255,255,0.85)" mt={1}>
               Klik tombol Connect untuk memulai Live Streaming 📡
             </Text>
           </Flex>
@@ -97,14 +124,16 @@ export default function LiveStream() {
             {/* Stream box */}
             <Box
               mt={1}
-              border="4px solid orange"
-              borderRadius="md"
+              border="1px solid rgba(255,255,255,0.2)"
+              borderRadius="2xl"
               overflow="hidden"
               w="100%"
               maxW="100%"
               mx="auto"
               position="relative"
               bg="black"
+              boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+              backdropFilter="blur(10px)"
             >
               <img
                 src={isFallback ? "/no-signal.png" : streamUrl}
@@ -130,6 +159,7 @@ export default function LiveStream() {
                   align="center"
                   justify="center"
                   bg="rgba(0,0,0,0.3)"
+                  backdropFilter="blur(10px)"
                 >
                   <Heading
                     size="lg"
@@ -156,13 +186,26 @@ export default function LiveStream() {
                 fontWeight="bold"
                 onClick={handleDisconnect}
                 shadow="md"
+                bg="rgba(255,0,0,0.25)"
+                color="white"
+                border="1px solid rgba(255,255,255,0.2)"
+                _hover={{
+                  bg: "rgba(255,0,0,0.35)",
+                  boxShadow: "0 8px 24px rgba(255,0,0,0.25)",
+                }}
+                backdropFilter="blur(10px)"
               >
                 DISCONNECT
               </Button>
             </Box>
 
             {/* Caption bawah */}
-            <Text fontSize="sm" color="gray.400" mt={1} textAlign="center">
+            <Text
+              fontSize="sm"
+              color="rgba(255,255,255,0.85)"
+              mt={1}
+              textAlign="center"
+            >
               Live Streaming diambil dari kamera yang terhubung ke VISMED
               Raspberry Pi 5 ‼️
             </Text>
