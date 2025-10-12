@@ -9,6 +9,7 @@ import {
   Text,
   HStack,
   Spinner,
+  Heading,
 } from "@chakra-ui/react";
 import { FiMic, FiSend, FiPlus, FiTrash2 } from "react-icons/fi";
 import PageTransition from "@/components/layouts/PageTransition";
@@ -185,42 +186,75 @@ const VISMEDTalks = () => {
       <Flex
         direction="column"
         minH="100dvh"
-        maxH="100dvh"
         w="100%"
-        p={{ base: 2, md: 4 }}
+        p={{ base: 3, md: 5 }}
+        color="white"
+        position="relative"
         overflow="hidden"
+        justify="flex-start"
+        pt={{ base: 4, md: 6 }}
       >
-        {/* Header */}
-        <Flex
-          align="center"
-          justify="center"
-          bg="#2f2f2f"
-          px={{ base: 3, md: 4 }}
-          py={{ base: 2, md: 3 }}
-          borderBottom="4px solid"
-          borderColor="gray.600"
-          boxShadow="sm"
+        {/* Header dengan gaya glassmorphism */}
+        <Box
+          position="relative"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
           borderRadius="2xl"
+          p={{ base: 5, md: 6 }}
+          mb={6}
+          bg="rgba(255, 255, 255, 0.15)"
+          boxShadow="0 8px 32px rgba(0, 0, 0, 0.25)"
+          backdropFilter="blur(14px) saturate(180%)"
+          border="1px solid rgba(255, 255, 255, 0.2)"
+          transition="all 0.3s ease"
+          _hover={{
+            transform: "translateY(-2px)",
+            boxShadow: "0 12px 36px rgba(255,165,0,0.25)",
+          }}
+          mt={{ base: -1, md: -2 }}
         >
-          <HStack gap={2}>
-            <FiMic size={24} color="white" />
-            <Text
-              fontSize={{ base: "lg", md: "xl" }}
-              fontWeight="bold"
-              color="white"
+          <HStack justify="center" gap={3}>
+            <FiMic size={28} color="#FFA500" />
+            <Heading
+              fontSize={{ base: "2xl", md: "3xl" }}
+              bgGradient="linear(to-r, orange.300, yellow.400)"
+              bgClip="text"
+              fontWeight="extrabold"
+              letterSpacing="wide"
+              color="rgba(255,255,255,0.85)"
             >
               VISMED Talks
-            </Text>
+            </Heading>
           </HStack>
-        </Flex>
+          <Text
+            mt={3}
+            fontSize={{ base: "md", md: "lg" }}
+            textAlign="center"
+            color="rgba(255,255,255,0.85)"
+            maxW="90%"
+          >
+            Bercakap dengan Vision Medicine secara real-time menggunakan AI
+          </Text>
+        </Box>
 
         {/* Chat Area */}
         <Box
           ref={chatContainerRef}
           flex="1"
-          overflowY="auto"
+          borderRadius="2xl"
+          border="1px solid rgba(255,255,255,0.15)"
+          boxShadow="0 8px 24px rgba(255,165,0,0.15)"
+          backdropFilter="blur(10px)"
+          overflow="hidden"
+          bg="rgba(255,255,255,0.08)"
+          position="relative"
+          mb={4}
           p={{ base: 3, md: 4 }}
           onScroll={checkIfAtBottom}
+          maxH="calc(100vh - 300px)" // Adjust to prevent overflow
+          overflowY="auto"
         >
           <VStack gap={3} align="stretch">
             {messages.map((msg, idx) => (
@@ -228,8 +262,12 @@ const VISMEDTalks = () => {
                 key={idx}
                 maxW={{ base: "85%", md: "70%" }}
                 alignSelf={msg.from === "vismed" ? "flex-start" : "flex-end"}
-                bg={msg.from === "vismed" ? "#445775" : "#D9D9D9"}
-                color={msg.from === "vismed" ? "white" : "black"}
+                bg={
+                  msg.from === "vismed"
+                    ? "rgba(68,87,117,0.6)"
+                    : "rgba(255,165,0,0.25)"
+                }
+                color={msg.from === "vismed" ? "white" : "white"}
                 px={{ base: 3, md: 4 }}
                 py={{ base: 2, md: 2 }}
                 borderRadius="xl"
@@ -237,6 +275,8 @@ const VISMEDTalks = () => {
                 whiteSpace="pre-wrap"
                 boxShadow="sm"
                 fontSize={{ base: "sm", md: "md" }}
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255,255,255,0.2)"
               >
                 {msg.text}
               </Box>
@@ -247,12 +287,14 @@ const VISMEDTalks = () => {
                 align="center"
                 gap={2}
                 alignSelf="flex-start"
-                bg="#445775"
+                bg="rgba(68,87,117,0.6)"
                 px={3}
                 py={2}
                 borderRadius="xl"
                 boxShadow="sm"
                 w="fit-content"
+                backdropFilter="blur(10px)"
+                border="1px solid rgba(255,255,255,0.2)"
               >
                 <Spinner size="sm" color="white" />
                 <Text color="white" fontSize={{ base: "sm", md: "md" }}>
@@ -263,15 +305,16 @@ const VISMEDTalks = () => {
           </VStack>
         </Box>
 
-        {/* Input Area */}
+        {/* Input Area - Removed sticky and bottom to keep it in flow at bottom */}
         <Box
-          borderTop="4px solid"
-          borderColor="gray.600"
-          p={{ base: 2, md: 3 }}
-          bg="#2f2f2f"
-          position="sticky"
-          bottom={{ base: "9px", md: "12px" }}
+          borderTop="1px solid rgba(255,255,255,0.15)"
+          p={{ base: 3, md: 4 }}
+          bg="rgba(255,255,255,0.12)"
+          backdropFilter="blur(16px)"
+          border="1px solid rgba(255,255,255,0.15)"
           borderRadius="2xl"
+          boxShadow="0 8px 24px rgba(255,165,0,0.2)"
+          position="relative"
           zIndex={100}
         >
           {/* Wrapper untuk tombol + dan popup */}
@@ -281,7 +324,7 @@ const VISMEDTalks = () => {
               aria-label="Menu"
               size={{ base: "sm", md: "md" }}
               variant="ghost"
-              colorScheme="green"
+              colorScheme="orange"
               position="absolute"
               left={{ base: "6px", md: "10px" }}
               top="50%"
@@ -289,11 +332,11 @@ const VISMEDTalks = () => {
               zIndex="2"
               onClick={() => setIsMenuOpen((prev) => !prev)}
               bg="transparent"
-              _hover={{ bg: "transparent" }}
-              _active={{ bg: "transparent" }}
-              _focus={{ boxShadow: "none", bg: "transparent" }}
+              _hover={{ bg: "rgba(255,165,0,0.2)" }}
+              _active={{ bg: "rgba(255,165,0,0.3)" }}
+              _focus={{ boxShadow: "none", bg: "rgba(255,165,0,0.2)" }}
             >
-              <FiPlus />
+              <FiPlus size={18} />
             </IconButton>
 
             {isMenuOpen && (
@@ -301,24 +344,26 @@ const VISMEDTalks = () => {
                 position="absolute"
                 bottom="50px"
                 left="10px"
-                bg="white"
-                color="black"
+                bg="rgba(255, 255, 255, 0.15)"
+                color="white"
                 p={2}
                 borderRadius="full"
-                boxShadow="lg"
+                boxShadow="0 8px 32px rgba(0, 0, 0, 0.25)"
+                backdropFilter="blur(14px) saturate(180%)"
+                border="1px solid rgba(255, 255, 255, 0.2)"
                 zIndex="10"
               >
                 <Flex
                   align="center"
                   gap={2}
                   cursor="pointer"
-                  _hover={{ bg: "gray.200" }}
+                  _hover={{ bg: "rgba(255,165,0,0.2)" }}
                   px={3}
                   py={2}
                   borderRadius="full"
                   onClick={handleClearChat}
                 >
-                  <FiTrash2 />
+                  <FiTrash2 size={16} color="white" />
                   <Text fontSize="sm">Clear Chat</Text>
                 </Flex>
               </Box>
@@ -331,7 +376,7 @@ const VISMEDTalks = () => {
             aria-label="Mic"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme={isListening ? "red" : "blue"}
+            colorScheme={isListening ? "red" : "orange"}
             position="absolute"
             left={{ base: "42px", md: "50px" }}
             top="50%"
@@ -339,11 +384,11 @@ const VISMEDTalks = () => {
             zIndex="1"
             onClick={handleMicClick}
             bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-            _focus={{ boxShadow: "none", bg: "transparent" }}
+            _hover={{ bg: "rgba(255,165,0,0.2)" }}
+            _active={{ bg: "rgba(255,165,0,0.3)" }}
+            _focus={{ boxShadow: "none", bg: "rgba(255,165,0,0.2)" }}
           >
-            <FiMic />
+            <FiMic size={18} />
           </IconButton>
 
           {/* Input */}
@@ -358,9 +403,12 @@ const VISMEDTalks = () => {
             pl={{ base: "70px", md: "80px" }}
             pr={{ base: "35px", md: "40px" }}
             color="black"
-            bg="white"
+            bg="rgba(255,255,255,0.9)"
             borderRadius="2xl"
             fontSize={{ base: "sm", md: "md" }}
+            border="1px solid rgba(255,255,255,0.3)"
+            _placeholder={{ color: "gray.500" }}
+            _focus={{ boxShadow: "0 0 0 1px rgba(255,165,0,0.5)" }}
           />
 
           {/* Send button */}
@@ -369,7 +417,7 @@ const VISMEDTalks = () => {
             aria-label="Send"
             size={{ base: "sm", md: "md" }}
             variant="ghost"
-            colorScheme="blue"
+            colorScheme="orange"
             onClick={handleSend}
             position="absolute"
             right={{ base: "6px", md: "10px" }}
@@ -377,11 +425,11 @@ const VISMEDTalks = () => {
             transform="translateY(-50%)"
             zIndex="1"
             bg="transparent"
-            _hover={{ bg: "transparent" }}
-            _active={{ bg: "transparent" }}
-            _focus={{ boxShadow: "none", bg: "transparent" }}
+            _hover={{ bg: "rgba(255,165,0,0.2)" }}
+            _active={{ bg: "rgba(255,165,0,0.3)" }}
+            _focus={{ boxShadow: "none", bg: "rgba(255,165,0,0.2)" }}
           >
-            <FiSend />
+            <FiSend size={18} />
           </IconButton>
         </Box>
       </Flex>
