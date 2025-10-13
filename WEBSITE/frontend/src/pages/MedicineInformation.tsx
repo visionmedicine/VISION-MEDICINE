@@ -110,11 +110,14 @@ const MedicineInformation = () => {
     }
   };
 
-  // Fetch dari backend
+  // Di MedicineInformation.tsx, ganti fetch:
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/medicines");
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/medicines`
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`); // Handle 404 better
         const data: Medicine[] = await res.json();
         const sorted = data
           .filter((m) => !!m?.name)
