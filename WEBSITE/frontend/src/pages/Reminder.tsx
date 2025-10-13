@@ -127,7 +127,9 @@ const Reminder = () => {
   useEffect(() => {
     const fetchMedicines = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/medicines");
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/medicines`
+        );
         const data: Medicine[] = await res.json();
         const sorted = data
           .filter((m) => !!m?.name)
@@ -155,7 +157,7 @@ const Reminder = () => {
 
       // ✅ Jika sebelumnya aktif dan ada eventId → hapus dari Google & Supabase
       if (item.isSet && item.eventId) {
-        fetch("http://localhost:5000/api/reminder/delete", {
+        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/reminder/delete`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -203,7 +205,7 @@ const Reminder = () => {
         if (r.eventId) {
           console.log("🗑 Hapus event via toggle OFF:", r.eventId);
           const delRes = await fetch(
-            "http://localhost:5000/api/reminder/delete",
+            `${import.meta.env.VITE_BACKEND_URL}/api/reminder/delete`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -228,18 +230,21 @@ const Reminder = () => {
         alert(`⚠️ Reminder untuk ${r.medicine} dinonaktifkan`);
       } else {
         console.log("➕ Create event:", r);
-        const res = await fetch("http://localhost:5000/api/reminder/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            user_email: "primary",
-            summary: r.medicine,
-            date: r.date,
-            hour: r.hour,
-            minute: r.minute,
-            active: true,
-          }),
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_BACKEND_URL}/api/reminder/create`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_email: "primary",
+              summary: r.medicine,
+              date: r.date,
+              hour: r.hour,
+              minute: r.minute,
+              active: true,
+            }),
+          }
+        );
         const data = await res.json();
         if (data?.ok) {
           setReminders((prev) =>
@@ -275,7 +280,7 @@ const Reminder = () => {
         if (r.eventId) {
           console.log("🗑 Delete row + event:", r.eventId);
           const delRes = await fetch(
-            "http://localhost:5000/api/reminder/delete",
+            `${import.meta.env.VITE_BACKEND_URL}/api/reminder/delete`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
