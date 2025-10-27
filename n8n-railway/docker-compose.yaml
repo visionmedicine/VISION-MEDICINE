@@ -1,0 +1,19 @@
+version: "3.3"
+
+services:
+  n8n:
+    build: .
+    container_name: n8n-app
+    restart: always
+    ports:
+      - "1234:1234"
+    environment:
+      - N8N_PORT=1234
+      - N8N_HOST=0.0.0.0
+      - GENERIC_TIMEZONE=Asia/Jakarta
+      - TZ=Asia/Jakarta
+      - N8N_DISABLE_EXTERNAL_MODULES=false
+      - N8N_EXTERNAL_MODULES_ALLOW_LIST=axios,form-data
+      - WEBHOOK_URL=${WEBHOOK_URL}
+    volumes:
+      - ~/.n8n:/home/node/.n8n
