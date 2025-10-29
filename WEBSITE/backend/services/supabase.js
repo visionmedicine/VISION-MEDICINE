@@ -87,3 +87,49 @@ export async function deleteReminder(id) {
   }
   return true;
 }
+
+/**
+ * Save detection to Supabase
+ * @param {Object} detection - { timestamp, detections, nama_obat, kandungan, indikasi, efek_samping, dosis }
+ */
+export async function saveDetection(detection) {
+  const { data, error } = await supabase
+    .from("detections")
+    .insert([detection])
+    .select();
+
+  if (error) {
+    console.error("❌ Error saving detection:", error.message);
+    throw error;
+  }
+  return data[0];
+}
+
+/**
+ * Get all detections from Supabase (sorted by timestamp DESC)
+ */
+export async function getDetections() {
+  const { data, error } = await supabase
+    .from("detections")
+    .select("*")
+    .order("timestamp", { ascending: false });
+
+  if (error) {
+    console.error("❌ Error fetching detections:", error.message);
+    throw error;
+  }
+  return data;
+}
+
+/**
+ * Clear all detections from Supabase
+ */
+export async function clearDetections() {
+  const { error } = await supabase.from("detections").delete();
+
+  if (error) {
+    console.error("❌ Error clearing detections:", error.message);
+    throw error;
+  }
+  return true;
+}

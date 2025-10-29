@@ -21,6 +21,7 @@ import medicinesRoutes from "./routes/medicines.js";
 import productsRoutes from "./routes/products.js";
 import howToUseRoutes from "./routes/how-to-use.js";
 import livestreamRoutes from "./routes/livestream.js";
+import detectionsRoutes from "./routes/detections.js"; // ➕ NEW: Detections routes
 import reminderRoutes from "./routes/reminder.js"; // 🔔 reminder
 import googleAuthRoutes from "./routes/googleAuth.js"; // 🔑 Google auth
 import n8nRoutes from "./routes/n8n_sse.js"; // 🧠 NEW: n8n SSE integration
@@ -84,6 +85,7 @@ app.use("/api/medicines", medicinesRoutes);
 app.use("/api/products", productsRoutes);
 app.use("/api/how-to-use", howToUseRoutes);
 app.use("/api/livestream", livestreamRoutes);
+app.use("/api/detections", detectionsRoutes); // ➕ NEW: Detections API
 app.use("/api/reminder", reminderRoutes);
 app.use("/api/google", googleAuthRoutes);
 app.use("/api/n8n", n8nRoutes); // ✅ Route baru untuk komunikasi SSE

@@ -1,5 +1,5 @@
 // ===============================
-// LiveStream.tsx — versi terbaru 2025-10 (Persistent LocalStorage Fix + Rounded Table)
+// LiveStream.tsx — versi terbaru 2025-10 (Persistent LocalStorage Fix + Rounded Table + Auto SSE Connect + Loop Fix + Smooth Clear + Fix Unused State)
 // ===============================
 
 import {
@@ -57,7 +57,12 @@ export default function LiveStream() {
   const [isConnected, setIsConnected] = useState(false);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [clearLoading, setClearLoading] = useState(false); // ➕ NEW: Khusus untuk clear (smooth, no global loading)
+  const [savingDetectionId, setSavingDetectionId] = useState<string | null>(
+    null
+  ); // ➕ FIX: Flag untuk prevent loop save
   const eventSourceRef = useRef<EventSource | null>(null);
+  const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null); // ➕ NEW: Ref untuk pause interval saat clear
 
   const itemsPerPage = 5;
 
@@ -115,33 +120,7 @@ export default function LiveStream() {
   const endIndex = startIndex + itemsPerPage;
   const currentDetections = detections.slice(startIndex, endIndex);
 
-  // === Muat data dari localStorage saat pertama kali ===
-  useEffect(() => {
-    try {
-      const savedData = localStorage.getItem("detections");
-      if (savedData) {
-        const parsed = JSON.parse(savedData);
-        if (Array.isArray(parsed)) {
-          setDetections(parsed);
-          console.log("✅ Data loaded from localStorage:", parsed);
-        }
-      }
-    } catch (err) {
-      console.error("⚠️ Error reading from localStorage:", err);
-    }
-  }, []);
-
-  // === Simpan data ke localStorage setiap kali berubah ===
-  useEffect(() => {
-    if (detections.length > 0) {
-      try {
-        localStorage.setItem("detections", JSON.stringify(detections));
-        console.log("💾 Data saved to localStorage:", detections);
-      } catch (err) {
-        console.error("⚠️ Error saving to localStorage:", err);
-      }
-    }
-  }, [detections]);
+  // ➕ HAPUS: useEffect save ke API (ganti dengan call langsung di onmessage untuk avoid loop)
 
   const handleImgError = () => setIsFallback(true);
   const handleConnect = () => {
@@ -156,30 +135,92 @@ export default function LiveStream() {
       eventSourceRef.current = null;
       console.log("🛑 SSE connection closed");
     }
-  };
-
-  const handleClearData = () => {
-    if (
-      confirm("Apakah Anda yakin ingin menghapus semua data detection history?")
-    ) {
-      localStorage.removeItem("detections");
-      setDetections([]);
+    // ➕ NEW: Clear interval saat disconnect
+    if (fetchIntervalRef.current) {
+      clearInterval(fetchIntervalRef.current);
+      fetchIntervalRef.current = null;
     }
   };
 
+  // ➕ UPDATED: Clear data via API (optimistic update, smooth no flicker)
+  const handleClearData = async () => {
+    if (
+      confirm("Apakah Anda yakin ingin menghapus semua data detection history?")
+    ) {
+      setClearLoading(true);
+      setDetections([]); // ➕ FIX: Optimistic clear (langsung kosongkan UI)
+      try {
+        const res = await fetch(`${apiUrl}/detections`, { method: "DELETE" });
+        if (!res.ok) {
+          throw new Error("Failed to clear data");
+        }
+        console.log("✅ Data cleared from Supabase");
+      } catch (err) {
+        console.error("⚠️ Error clearing data:", err);
+        // ➕ FIX: Re-fetch jika gagal untuk sync
+        fetchDetections();
+        alert("Gagal menghapus data. Data di-refresh.");
+      } finally {
+        setClearLoading(false);
+      }
+    }
+  };
+
+  // ➕ UPDATED: Fetch detections dari API + FIX: Skip update jika data sama untuk hindari refresh visual
   const fetchDetections = async () => {
+    if (clearLoading) return; // ➕ FIX: Skip fetch saat clearing untuk avoid flicker
     try {
       const res = await fetch(`${apiUrl}/detections`);
       if (res.ok) {
         const data = await res.json();
-        const sorted = data.sort(
-          (a: Detection, b: Detection) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-        setDetections(sorted);
+        // ➕ FIX: Hanya update state jika data berbeda (hindari re-render tidak perlu)
+        const isDataDifferent =
+          JSON.stringify(data) !== JSON.stringify(detections);
+        if (isDataDifferent) {
+          setDetections(data);
+          console.log("✅ Data updated from Supabase:", data);
+        } else {
+          console.log("ℹ️ Data unchanged, skipping update");
+        }
+      } else {
+        console.error("Error fetching detections:", res.statusText);
       }
     } catch (e) {
       console.error("Error fetching detections:", e);
+    }
+  };
+
+  // ➕ UPDATED: Save single detection ke API (tanpa update state di sini, biar fetch sync)
+  const saveDetectionToAPI = async (detection: Detection) => {
+    if (savingDetectionId === detection.id) {
+      console.log("⏭️ Skip save: Already saving", detection.id);
+      return; // ➕ FIX: Prevent multiple save
+    }
+
+    setSavingDetectionId(detection.id);
+    try {
+      const { id, ...detectionWithoutId } = detection;
+
+      const res = await fetch(`${apiUrl}/detections`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(detectionWithoutId),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to save detection`);
+      }
+      const savedDetection = await res.json();
+      console.log(
+        "💾 Detection saved to Supabase with UUID:",
+        savedDetection.id
+      );
+
+      // ➕ FIX: No state update di sini (avoid loop), biar fetch interval sync
+    } catch (err) {
+      console.error("⚠️ Error saving detection:", err);
+      if (err instanceof Error) alert(`Gagal simpan detection: ${err.message}`);
+    } finally {
+      setSavingDetectionId(null);
     }
   };
 
@@ -210,8 +251,22 @@ export default function LiveStream() {
     return parsed;
   };
 
+  // ➕ UPDATED: Helper untuk cek duplicate detection (berdasarkan nama_obat atau output)
+  const isDuplicateDetection = (newDet: Detection, existing: Detection[]) => {
+    return existing.some(
+      (det) =>
+        det.nama_obat === newDet.nama_obat ||
+        det.detections[0]?.name?.includes(newDet.detections[0]?.name || "")
+    );
+  };
+
   // === SSE listener ===
   const connectSSE = () => {
+    // ➕ FIX: Close existing jika ada
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
     console.log("🚀 Connecting to SSE:", sseUrl);
     const source = new EventSource(sseUrl);
     eventSourceRef.current = source;
@@ -220,7 +275,7 @@ export default function LiveStream() {
     source.onerror = (err) => {
       console.error("❌ SSE error:", err);
       setTimeout(() => {
-        if (isConnected) connectSSE();
+        if (!eventSourceRef.current) connectSSE(); // ➕ FIX: Hanya retry jika belum connect
       }, 3000);
     };
 
@@ -233,7 +288,7 @@ export default function LiveStream() {
         if (Array.isArray(data) && data[0]?.output) {
           const parsed = parseOutputText(data[0].output);
           newDetection = {
-            id: Date.now().toString(),
+            id: Date.now().toString() + Math.random(), // ➕ FIX: Unique temp ID
             timestamp: new Date().toISOString(),
             detections: [{ name: data[0].output, confidence: 1.0 }],
             ...parsed,
@@ -241,25 +296,25 @@ export default function LiveStream() {
         } else if (data?.output) {
           const parsed = parseOutputText(data.output);
           newDetection = {
-            id: Date.now().toString(),
+            id: Date.now().toString() + Math.random(),
             timestamp: new Date().toISOString(),
             detections: [{ name: data.output, confidence: 1.0 }],
             ...parsed,
           };
         } else if (data?.detections) {
           newDetection = {
-            id: data.id || Date.now().toString(),
+            id: data.id || Date.now().toString() + Math.random(),
             timestamp: data.timestamp || new Date().toISOString(),
             detections: data.detections,
           };
         }
 
-        if (newDetection) {
-          setDetections((prev) => {
-            const updated = [newDetection, ...prev];
-            localStorage.setItem("detections", JSON.stringify(updated)); // ✅ Simpan langsung
-            return updated;
-          });
+        if (newDetection && !isDuplicateDetection(newDetection, detections)) {
+          // ➕ FIX: Skip jika duplicate
+          setDetections((prev) => [newDetection, ...prev]);
+          saveDetectionToAPI(newDetection); // ➕ FIX: Call save langsung, bukan via useEffect
+        } else if (newDetection) {
+          console.log("⏭️ Skip duplicate detection:", newDetection.nama_obat);
         }
       } catch (e) {
         console.error("⚠️ Error parsing SSE data:", e);
@@ -267,17 +322,28 @@ export default function LiveStream() {
     };
   };
 
+  // ➕ UPDATED: Auto-connect SSE saat component mount (independent dari isConnected)
+  useEffect(() => {
+    connectSSE(); // Auto connect SSE dulu
+
+    // Cleanup on unmount
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+        eventSourceRef.current = null;
+      }
+    };
+  }, []); // Empty dependency: Jalankan sekali saat mount
+
+  // ➕ UPDATED: useEffect untuk fetch & video control (tanpa SSE)
   useEffect(() => {
     if (isConnected) {
-      fetchDetections();
-      const interval = setInterval(fetchDetections, 5000);
-      connectSSE();
+      fetchDetections(); // ➕ Load dari API
+      fetchIntervalRef.current = setInterval(fetchDetections, 5000); // ➕ FIX: Use ref untuk clear
       return () => {
-        clearInterval(interval);
-        if (eventSourceRef.current) {
-          eventSourceRef.current.close();
-          eventSourceRef.current = null;
-          console.log("🛑 SSE disconnected");
+        if (fetchIntervalRef.current) {
+          clearInterval(fetchIntervalRef.current);
+          fetchIntervalRef.current = null;
         }
       };
     }
@@ -298,6 +364,10 @@ export default function LiveStream() {
           <Heading size="2xl" color="white" fontWeight="extrabold">
             Live Stream Detection
           </Heading>
+          {/* ➕ Tampilkan status SSE */}
+          <Text fontSize="sm" color="rgba(255,255,255,0.7)">
+            SSE Status: {eventSourceRef.current ? "Connected" : "Disconnected"}
+          </Text>
         </Flex>
 
         {!isConnected ? (
@@ -321,7 +391,7 @@ export default function LiveStream() {
               textAlign="center"
               px={4}
             >
-              Klik tombol Connect untuk memulai Live Streaming 📡
+              Klik CONNECT untuk video stream 📡
             </Text>
           </Flex>
         ) : (
@@ -391,11 +461,12 @@ export default function LiveStream() {
                 px={{ base: 4, md: 10 }}
                 py={{ base: 3, md: 6 }}
                 onClick={handleClearData}
+                disabled={clearLoading} // ➕ UPDATED: Gunakan clearLoading saja
                 bg="rgba(255,255,255,0.15)"
                 color="white"
                 _hover={{ bg: "rgba(255,255,255,0.25)" }}
               >
-                CLEAR DATA
+                {clearLoading ? "CLEARING..." : "CLEAR DATA"}
               </Button>
             </Flex>
 
@@ -427,6 +498,7 @@ export default function LiveStream() {
                 Detection History
               </Heading>
 
+              {/* ➕ FIX: Hilangkan kondisi fetchLoading untuk hindari tampilan loading yang mengganggu; table selalu render dengan data current */}
               {detections.length === 0 ? (
                 <Text color="rgba(255,255,255,0.6)" textAlign="center">
                   No detections yet. Starting stream...
