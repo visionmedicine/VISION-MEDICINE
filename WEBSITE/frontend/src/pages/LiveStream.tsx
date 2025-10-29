@@ -63,6 +63,7 @@ export default function LiveStream() {
   ); // ➕ FIX: Flag untuk prevent loop save
   const eventSourceRef = useRef<EventSource | null>(null);
   const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null); // ➕ NEW: Ref untuk pause interval saat clear
+  const prevDetectionsRef = useRef<Detection[]>([]); // ➕ NEW: Track previous detections for revert on clear fail
 
   const itemsPerPage = 5;
 
@@ -110,9 +111,12 @@ export default function LiveStream() {
     { key: "dos", label: "Dosis Pemakaian" },
   ];
 
-  // Reset to first page when detections change
+  // ➕ UPDATED: Adjust page only if current page exceeds new total (no forced reset to 1)
   useEffect(() => {
-    setCurrentPage(1);
+    const totalPages = Math.ceil(detections.length / itemsPerPage);
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages || 1);
+    }
   }, [detections]);
 
   const totalPages = Math.ceil(detections.length / itemsPerPage);
@@ -142,12 +146,13 @@ export default function LiveStream() {
     }
   };
 
-  // ➕ UPDATED: Clear data via API (optimistic update, smooth no flicker)
+  // ➕ UPDATED: Clear data via API (optimistic update, revert on fail)
   const handleClearData = async () => {
     if (
       confirm("Apakah Anda yakin ingin menghapus semua data detection history?")
     ) {
       setClearLoading(true);
+      prevDetectionsRef.current = [...detections]; // ➕ NEW: Save previous state
       setDetections([]); // ➕ FIX: Optimistic clear (langsung kosongkan UI)
       try {
         const res = await fetch(`${apiUrl}/detections`, { method: "DELETE" });
@@ -155,11 +160,12 @@ export default function LiveStream() {
           throw new Error("Failed to clear data");
         }
         console.log("✅ Data cleared from Supabase");
+        prevDetectionsRef.current = []; // Clear ref on success
       } catch (err) {
         console.error("⚠️ Error clearing data:", err);
-        // ➕ FIX: Re-fetch jika gagal untuk sync
-        fetchDetections();
-        alert("Gagal menghapus data. Data di-refresh.");
+        // ➕ UPDATED: Revert to previous state instead of re-fetch
+        setDetections(prevDetectionsRef.current);
+        alert("Gagal menghapus data.");
       } finally {
         setClearLoading(false);
       }

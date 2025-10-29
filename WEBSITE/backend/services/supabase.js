@@ -125,10 +125,17 @@ export async function getDetections() {
  * Clear all detections from Supabase
  */
 export async function clearDetections() {
-  const { error } = await supabase.from("detections").delete();
+  // ➕ UPDATED: Use .not('id', 'is', null) to select all rows where id is not null (satisfies RLS where requirement)
+  const { error } = await supabase
+    .from("detections")
+    .delete()
+    .not("id", "is", null);
 
   if (error) {
-    console.error("❌ Error clearing detections:", error.message);
+    console.error(
+      "❌ Error clearing detections:",
+      JSON.stringify(error, null, 2)
+    );
     throw error;
   }
   return true;
