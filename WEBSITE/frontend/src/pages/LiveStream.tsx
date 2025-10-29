@@ -169,7 +169,7 @@ export default function LiveStream() {
 
   const fetchDetections = async () => {
     try {
-      const res = await fetch(`${apiUrl}/detections?limit=10`);
+      const res = await fetch(`${apiUrl}/detections`);
       if (res.ok) {
         const data = await res.json();
         const sorted = data.sort(
@@ -256,7 +256,7 @@ export default function LiveStream() {
 
         if (newDetection) {
           setDetections((prev) => {
-            const updated = [newDetection, ...prev].slice(0, 10);
+            const updated = [newDetection, ...prev];
             localStorage.setItem("detections", JSON.stringify(updated)); // ✅ Simpan langsung
             return updated;
           });

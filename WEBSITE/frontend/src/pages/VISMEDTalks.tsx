@@ -330,7 +330,7 @@ const VISMEDTalks = () => {
               variant="ghost"
               colorScheme="orange"
               position="absolute"
-              left={{ base: "6px", md: "10px" }}
+              left={{ base: "12px", md: "16px" }}
               top="50%"
               transform="translateY(-50%)"
               zIndex="2"
@@ -382,7 +382,7 @@ const VISMEDTalks = () => {
             variant="ghost"
             colorScheme={isListening ? "red" : "orange"}
             position="absolute"
-            left={{ base: "42px", md: "50px" }}
+            left={{ base: "48px", md: "56px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
@@ -404,8 +404,8 @@ const VISMEDTalks = () => {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleSend();
             }}
-            pl={{ base: "70px", md: "80px" }}
-            pr={{ base: "35px", md: "40px" }}
+            pl={{ base: "76px", md: "86px" }}
+            pr={{ base: "41px", md: "46px" }}
             color="black"
             bg="rgba(255,255,255,0.9)"
             borderRadius="2xl"
@@ -424,7 +424,7 @@ const VISMEDTalks = () => {
             colorScheme="orange"
             onClick={handleSend}
             position="absolute"
-            right={{ base: "6px", md: "10px" }}
+            right={{ base: "12px", md: "16px" }}
             top="50%"
             transform="translateY(-50%)"
             zIndex="1"
