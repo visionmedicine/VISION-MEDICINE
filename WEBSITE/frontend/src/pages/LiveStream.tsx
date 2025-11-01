@@ -1,4 +1,3 @@
-// ===============================
 // LiveStream.tsx — versi terbaru 2025-10 (Persistent LocalStorage Fix + Rounded Table + Auto SSE Connect + Loop Fix + Smooth Clear + Fix Unused State)
 // ===============================
 
@@ -61,6 +60,7 @@ export default function LiveStream() {
   const [savingDetectionId, setSavingDetectionId] = useState<string | null>(
     null
   ); // ➕ FIX: Flag untuk prevent loop save
+  const [pendingSaves, setPendingSaves] = useState(0); // ➕ NEW: Track pending saves to skip fetch during save
   const eventSourceRef = useRef<EventSource | null>(null);
   const fetchIntervalRef = useRef<NodeJS.Timeout | null>(null); // ➕ NEW: Ref untuk pause interval saat clear
   const prevDetectionsRef = useRef<Detection[]>([]); // ➕ NEW: Track previous detections for revert on clear fail
@@ -174,17 +174,22 @@ export default function LiveStream() {
 
   // ➕ UPDATED: Fetch detections dari API + FIX: Skip update jika data sama untuk hindari refresh visual
   const fetchDetections = async () => {
-    if (clearLoading) return; // ➕ FIX: Skip fetch saat clearing untuk avoid flicker
+    if (clearLoading || pendingSaves > 0) return; // ➕ FIX: Skip fetch saat clearing atau ada pending save untuk avoid revert optimistic add
     try {
       const res = await fetch(`${apiUrl}/detections`);
       if (res.ok) {
         const data = await res.json();
+        // ➕ NEW: Sort descending by timestamp untuk consistent newest first
+        const sortedData = data.sort(
+          (a: Detection, b: Detection) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
         // ➕ FIX: Hanya update state jika data berbeda (hindari re-render tidak perlu)
         const isDataDifferent =
-          JSON.stringify(data) !== JSON.stringify(detections);
+          JSON.stringify(sortedData) !== JSON.stringify(detections);
         if (isDataDifferent) {
-          setDetections(data);
-          console.log("✅ Data updated from Supabase:", data);
+          setDetections(sortedData);
+          console.log("✅ Data updated from Supabase:", sortedData);
         } else {
           console.log("ℹ️ Data unchanged, skipping update");
         }
@@ -204,6 +209,7 @@ export default function LiveStream() {
     }
 
     setSavingDetectionId(detection.id);
+    setPendingSaves((prev) => prev + 1); // ➕ NEW: Increment pending saves
     try {
       const { id, ...detectionWithoutId } = detection;
 
@@ -221,12 +227,18 @@ export default function LiveStream() {
         savedDetection.id
       );
 
+      // ➕ NEW: Update local state with saved detection (replace temp id)
+      setDetections((prev) =>
+        prev.map((det) => (det.id === detection.id ? savedDetection : det))
+      );
+
       // ➕ FIX: No state update di sini (avoid loop), biar fetch interval sync
     } catch (err) {
       console.error("⚠️ Error saving detection:", err);
       if (err instanceof Error) alert(`Gagal simpan detection: ${err.message}`);
     } finally {
       setSavingDetectionId(null);
+      setPendingSaves((prev) => Math.max(0, prev - 1)); // ➕ NEW: Decrement pending saves
     }
   };
 
